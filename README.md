@@ -1,18 +1,29 @@
-# Wrath Relay Browser — open-source privacy browser + opt-in relay node.
-#
-# What it IS: a hardened browser (Tor built in, UA + geo spoof rotation,
-# fingerprint kill) with an OPTIONAL relay that helps the mesh survive.
-# What it is NOT: it never touches your files, never runs tasks on your
-# own machine, never persists past uninstall. The relay forwards OPAQUE
-# blobs — encrypted chunks it cannot read, from senders it cannot name,
-# to destinations it cannot see. Zero knowledge by construction.
-#
-# Consent: relay is OFF by default. First run shows a plain-words screen.
-# Toggle off anytime, one click, no restart. Uninstall removes everything.
-#
-# Source veil: this repo holds the browser + relay ONLY. The C2 /
-# panel / forge / brain live in a private repo and are never vendored
-# here. The relay speaks a fixed wire protocol (see WIRE.md) — blobs in,
-# blobs out. No panel URLs, no keys, no builder logic in this tree.
+# Wrath Relay Browser
 
-MIT License — do what you want, don't blame us.
+A private Chromium browser with an opt-in relay node. Blocks trackers per-site like Brave Shields, spoofs identity per-tab, routes through Tor when available — and optionally forwards opaque mesh blobs so the network survives takedowns.
+
+![Wrath](wordmark.png)
+
+## What it does
+
+- **Shields** — per-site ad/tracker blocking with a lion-style panel, live counter, full block log. Shields down on one site weakens nothing else.
+- **Identity** — fresh user agent per tab, real geolocation always denied, optional city spoof (NYC / London / Tokyo / Zurich).
+- **Tor** — SOCKS5 when `127.0.0.1:9050` answers, direct fallback when it doesn't. Live pill, auto-rescan.
+- **Relay (opt-in, OFF by default)** — forwards end-to-end encrypted blobs it cannot read, to destinations it cannot resolve. 64KB cap, 100/day, 24h hold. One click off, uninstall removes everything.
+- **Browser basics** — tabs + vertical-tabs mode, omnibox suggestions from history, `wrath://history`, find-in-page, zoom, themes, wallpaper, quick links, 3 search engines.
+
+## Install
+
+Download `Wrath Setup 1.1.0.exe` from [Releases](../../releases) — installer bundles every DLL, Start Menu shortcut, clean uninstall. Portable `Wrath 1.1.0.exe` also available.
+
+Or run from source: `npm install && npm start` (needs Node 20+).
+
+## The veil
+
+This repo holds the browser + relay **only**. No panel, no forge, no wrathScript, no keys, no onion addresses. The relay speaks the fixed [WIRE.md](WIRE.md) protocol — blobs in, blobs out. Read it. Audit it. It can't do what it can't do.
+
+## Consent
+
+Relay is OFF until you turn it on. The toggle says exactly what it does. No dark patterns, no background opt-in.
+
+MIT — do what you want, don't blame us.
