@@ -12,6 +12,7 @@ contextBridge.exposeInMainWorld("wrath", {
   histGet: () => ipcRenderer.invoke("hist-get"),
   histClear: () => ipcRenderer.invoke("hist-clear"),
   shieldLog: () => ipcRenderer.invoke("shield-log"),
+  onionGet: () => ipcRenderer.invoke("onion-get"),
   vaultCount: () => ipcRenderer.invoke("vault-count"),
   vaultExport: () => ipcRenderer.invoke("vault-export"),
   vaultWipe: () => ipcRenderer.invoke("vault-wipe"),
