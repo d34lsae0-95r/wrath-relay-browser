@@ -7,6 +7,12 @@ contextBridge.exposeInMainWorld("wrath", {
   setGeo: (m) => ipcRenderer.invoke("set-geo", m),
   getGeo: () => ipcRenderer.invoke("get-geo"),
   torRescan: () => ipcRenderer.invoke("tor-rescan"),
-  onTor: (cb) => ipcRenderer.on("tor", (_, v) => cb(v)),
+  siteGet: (h) => ipcRenderer.invoke("site-get", h),
+  siteSet: (h, k, v) => ipcRenderer.invoke("site-set", h, k, v),
+  histGet: () => ipcRenderer.invoke("hist-get"),
+  histClear: () => ipcRenderer.invoke("hist-clear"),
+  shieldLog: () => ipcRenderer.invoke("shield-log"),
+  onHist: (cb) => ipcRenderer.on("hist", (_, v) => cb(v)),
+  onDl: (cb) => ipcRenderer.on("dl", (_, v) => cb(v)),
   onShield: (cb) => ipcRenderer.on("shield", (_, n) => cb(n)),
 });
