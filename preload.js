@@ -12,7 +12,11 @@ contextBridge.exposeInMainWorld("wrath", {
   histGet: () => ipcRenderer.invoke("hist-get"),
   histClear: () => ipcRenderer.invoke("hist-clear"),
   shieldLog: () => ipcRenderer.invoke("shield-log"),
+  vaultCount: () => ipcRenderer.invoke("vault-count"),
+  vaultExport: () => ipcRenderer.invoke("vault-export"),
+  vaultWipe: () => ipcRenderer.invoke("vault-wipe"),
   onHist: (cb) => ipcRenderer.on("hist", (_, v) => cb(v)),
+  onVault: (cb) => ipcRenderer.on("vault", (_, v) => cb(v)),
   onDl: (cb) => ipcRenderer.on("dl", (_, v) => cb(v)),
   onShield: (cb) => ipcRenderer.on("shield", (_, n) => cb(n)),
 });
