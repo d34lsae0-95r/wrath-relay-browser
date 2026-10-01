@@ -115,7 +115,7 @@ input[type=file]{display:none}
 <div class="card"><div class="n" id="st-track">0</div><div class="t">Blocked</div><div class="sub" id="st-tor2">trackers + ads</div></div>
 <div class="card"><div class="n" id="st-vault">0</div><div class="t">Vault</div><div class="sub"><a href="#" id="vaultopen" style="color:var(--acc)">ML-KEM-768 sealed</a></div></div>
 <div class="card"><div class="n" id="st-tor">…</div><div class="t">Tor</div><div class="sub" id="torsub2">probing…</div></div>
-<div class="card"><div class="n" id="st-relay">off</div><div class="t">Relay</div><div class="sub"><a href="#" id="relaylearn" style="color:var(--acc)">what's this?</a></div></div>
+<div class="card"><div class="n" id="st-relay">off</div><div class="t">Relay</div><div class="sub"><a href="#" id="relaylearn" style="color:var(--acc)">what's this?</a><span id="onionline" style="display:block;overflow:hidden;text-overflow:ellipsis"></span></div></div>
 </div>
 <div class="quick" id="quick"></div>
 </div></div>
@@ -387,6 +387,7 @@ async function relayUI() {
   try {
     const h = await window.wrath.health().catch(() => ({ relay: false }));
     document.getElementById("st-relay").textContent = h.relay ? "on" : "off";
+    try { document.getElementById("onionline").textContent = await window.wrath.onionGet().catch(() => ""); } catch (e) {}
     const sw = document.getElementById("m-relay");
     sw.textContent = h.relay ? "on" : "off"; sw.classList.toggle("on", !!h.relay);
     document.getElementById("m-relaysub").textContent = h.relay ? ("on · " + (h.used_today || 0) + "/100 today") : "off";
