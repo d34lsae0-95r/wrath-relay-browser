@@ -36,11 +36,13 @@ async function boot() {
   const setTor = async (v) => {
     torOn = !!v;
     try {
-      if (torOn) await session.defaultSession.setProxy({ proxyRules: "socks5://127.0.0.1:9050", proxyBypassRules: "localhost,127.0.0.1" });
+      if (torOn) await session.defaultSession.setProxy({ proxyRules: "socks5://127.0.0.1:9050", proxyBypassRules: "localhost,127.0.0.1,<local>" });
       else await session.defaultSession.setProxy({ mode: "direct" });
     } catch (e) {}
     try { win && win.webContents.send("tor", torOn); } catch (e) {}
   };
+  // start DIRECT — never route the first paint through a proxy that
+  // may not exist. enable Tor only after the probe proves 9050 alive.
   // shield: block trackers/ads before they load
   try {
     session.defaultSession.webRequest.onBeforeRequest((d, cb) => {
@@ -78,6 +80,7 @@ async function boot() {
   ipcMain.handle("get-geo", () => geoMode);
   ipcMain.handle("tor-rescan", async () => { torProbe(setTor); return true; });
 
+  try { await session.defaultSession.setProxy({ mode: "direct" }); } catch (e) {}
   torProbe(setTor);
   setInterval(() => torProbe(setTor), 30000);
 
