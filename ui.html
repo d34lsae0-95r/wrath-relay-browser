@@ -120,9 +120,9 @@ input[type=file]{display:none}
 </div></div>
 <div class="sheet" id="drawer">
 <h3>Shields defaults</h3>
-<div class="row"><div>Geo spoof<small>real location always denied</small></div><select id="geo"><option value="off">denied</option><option value="nyc">New York</option><option value="london">London</option><option value="tokyo">Tokyo</option><option value="zurich">Zurich</option></select></div>
+<div class="row"><div>Location<small>Tor exit decides — real location always denied</small></div><span style="font-size:12px;color:var(--acc)" id="geo-note">tor exit</span></div>
 <div class="row"><div>Search engine</div><select id="engine"><option value="duck">DuckDuckGo</option><option value="brave">Brave Search</option><option value="google">Google</option></select></div>
-<div class="row"><div>Rotate identity<small>fresh user agent</small></div><button class="switch" id="uanew">go</button></div>
+<div class="row"><div>Identity<small>fresh user agent, automatic every tab</small></div><span style="font-size:12px;color:var(--acc)">auto</span></div>
 <h3>Appearance</h3>
 <div class="row"><div>Theme</div><div class="swatches" id="swatches">
 <div class="sw on" data-t="purple" style="background:#a78bfa"></div>
@@ -345,9 +345,6 @@ document.getElementById("qbtn").onclick = () => {
   renderQuick();
 };
 renderQuick();
-async function syncGeo(v) { await window.wrath.setGeo(v); document.getElementById("geo").value = v; }
-document.getElementById("geo").onchange = (e) => syncGeo(e.target.value);
-(async () => { try { document.getElementById("geo").value = await window.wrath.getGeo(); } catch (e) {} })();
 async function toggleRelay() {
   const h = await window.wrath.health();
   const r = await window.wrath.toggle(!h.relay);
