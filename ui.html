@@ -3,136 +3,137 @@
 <title>Wrath</title>
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
-:root{--acc:#c4b5fd;--bg:#060607;--bar:#0d0d12;--card:rgba(255,255,255,.03)}
-body{background:var(--bg);color:#f4f2ff;font:400 14px Inter,system-ui,sans-serif;height:100vh;display:flex;overflow:hidden}
+:root{--acc:#c4b5fd;--bg:#060607;--bar:#0c0c10;--line:rgba(255,255,255,.08)}
+body{background:var(--bg);color:#f4f2ff;font:400 14px/1.5 Inter,-apple-system,"Segoe UI",system-ui,sans-serif;height:100vh;display:flex;overflow:hidden;-webkit-font-smoothing:antialiased}
 body[data-theme="purple"]{--acc:#a78bfa}
 body[data-theme="red"]{--acc:#f87171}
 body[data-theme="green"]{--acc:#34d399}
 body[data-theme="white"]{--acc:#ffffff}
-body.vtabs .tabs{flex-direction:column;width:212px;height:100%;padding:10px 8px;overflow-y:auto;border-right:1px solid rgba(255,255,255,.08)}
-body.vtabs .tab{max-width:none;border-radius:10px;border:1px solid rgba(255,255,255,.09)}
-body.vtabs .tab.on{border-color:var(--acc)}
-body.vtabs .tab.newtab{justify-content:center}
+body.vtabs .tabs{flex-direction:column;width:216px;height:100%;padding:12px 10px;overflow-y:auto;border-right:1px solid var(--line);gap:6px}
+body.vtabs .tab{max-width:none;border-radius:10px}
 .main{flex:1;display:flex;flex-direction:column;min-width:0}
-.tabs{display:flex;gap:4px;padding:8px 12px 0;background:var(--bar);overflow-x:auto;align-items:flex-end}
-.tab{background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.09);border-bottom:0;border-radius:10px 10px 0 0;padding:7px 10px;font-size:12px;cursor:pointer;max-width:190px;min-width:90px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;display:flex;gap:6px;align-items:center}
-.tab.on{background:var(--bg);border-color:var(--acc);color:var(--acc)}
-.tab .x{opacity:.5;cursor:pointer;margin-left:auto}.tab .x:hover{opacity:1;color:#f87171}
-.tab.newtab{background:transparent;border-style:dashed;font-size:15px;min-width:36px;justify-content:center}
-.top{display:flex;gap:6px;padding:10px 12px;background:var(--bar);border-bottom:1px solid rgba(255,255,255,.1);align-items:center;position:relative}
-.brand img{height:26px;display:block}
-.ibtn{background:rgba(255,255,255,.05);color:#fff;border:1px solid rgba(255,255,255,.12);border-radius:9px;padding:7px 11px;cursor:pointer;font-size:13px}
-.ibtn:hover{border-color:var(--acc);color:var(--acc)}
+.tabs{display:flex;gap:6px;padding:10px 14px 0;background:var(--bar);overflow-x:auto;align-items:flex-end}
+.tab{background:rgba(255,255,255,.035);border:1px solid transparent;border-radius:10px 10px 0 0;padding:8px 12px;font-size:12.5px;cursor:pointer;max-width:200px;min-width:100px;overflow:hidden;white-space:nowrap;display:flex;gap:8px;align-items:center;color:rgba(255,255,255,.65)}
+.tab.on{background:var(--bg);color:#fff;border-color:var(--line);border-bottom-color:var(--bg)}
+.tab .x{opacity:0;margin-left:auto;font-size:11px;padding:2px 5px;border-radius:6px}.tab:hover .x{opacity:.6}.tab .x:hover{opacity:1;background:rgba(255,255,255,.1);color:#f87171}
+.tab.newtab{background:transparent;min-width:34px;justify-content:center;color:rgba(255,255,255,.5);font-size:15px}
+.top{display:flex;gap:8px;padding:10px 14px;background:var(--bg);align-items:center}
+.nav{display:flex;gap:2px}
+.nav button{background:transparent;color:rgba(255,255,255,.7);border:0;border-radius:8px;padding:8px 10px;cursor:pointer;font-size:15px}
+.nav button:hover{background:rgba(255,255,255,.07);color:#fff}
+.lion{background:transparent;border:0;border-radius:8px;padding:6px 8px;cursor:pointer;font-size:16px;display:flex;gap:6px;align-items:center}
+.lion:hover{background:rgba(255,255,255,.07)}
+.lion b{font-size:11px;color:var(--acc);font-weight:600}
 .omniwrap{flex:1;position:relative}
-#url{width:100%;background:#000;border:1px solid rgba(255,255,255,.15);border-radius:10px;color:#fff;padding:8px 14px;font-size:13px}
-#url:focus{outline:none;border-color:var(--acc)}
-#sugg{position:absolute;top:110%;left:0;right:0;background:#101016;border:1px solid var(--acc);border-radius:10px;overflow:hidden;display:none;z-index:20}
-#sugg div{padding:9px 14px;font-size:13px;cursor:pointer}
-#sugg div:hover,#sugg div.hot{background:rgba(167,139,250,.15)}
-.shieldbtn{display:flex;align-items:center;gap:6px;font-size:12px;padding:7px 10px;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.12);border-radius:9px;cursor:pointer;white-space:nowrap}
-.shieldbtn b{color:var(--acc)}
-.shieldbtn:hover{border-color:var(--acc)}
-.pill{font-size:10px;padding:4px 10px;border-radius:99px;border:1px solid rgba(255,255,255,.15);color:rgba(255,255,255,.6);white-space:nowrap;cursor:pointer}
-.pill.tor-on{color:#34d399;border-color:rgba(52,211,153,.4)}
-.pill.relay-on{color:var(--acc);border-color:var(--acc)}
+#url{width:100%;background:rgba(255,255,255,.055);border:1px solid transparent;border-radius:999px;color:#fff;padding:9px 18px;font-size:13.5px}
+#url:hover{background:rgba(255,255,255,.08)}
+#url:focus{outline:none;background:rgba(255,255,255,.08);border-color:var(--acc)}
+#url.tor{border-color:rgba(52,211,153,.35)}
+#sugg{position:absolute;top:calc(100% + 6px);left:0;right:0;background:#141419;border:1px solid var(--line);border-radius:14px;overflow:hidden;display:none;z-index:20;box-shadow:0 18px 50px rgba(0,0,0,.6)}
+#sugg div{padding:10px 16px;font-size:13px;cursor:pointer;display:flex;gap:10px;align-items:center}
+#sugg div:hover,#sugg div.hot{background:rgba(255,255,255,.06)}
+#sugg .src{font-size:10px;color:rgba(255,255,255,.4);margin-left:auto}
+.menu{background:transparent;color:rgba(255,255,255,.7);border:0;border-radius:8px;padding:8px 10px;cursor:pointer;font-size:16px}
+.menu:hover{background:rgba(255,255,255,.07);color:#fff}
 #views{flex:1;position:relative}
 webview{position:absolute;inset:0;width:100%;height:100%;background:var(--bg)}
 .page{position:absolute;inset:0;overflow:auto;background:var(--bg)}
-.home-in{max-width:780px;margin:7vh auto;padding:0 24px;text-align:center}
-.home-in img.mark{height:110px}
-.home-in img.word{height:50px;margin-top:12px}
-.omni{display:flex;gap:8px;margin:28px 0 8px}
-.omni input{flex:1;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.15);border-radius:12px;color:#fff;padding:13px 18px;font-size:14px}
-.omni input:focus{outline:none;border-color:var(--acc)}
-.omni button{background:#fff;color:#000;border:0;border-radius:12px;padding:0 26px;font-weight:600;cursor:pointer}
-.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin:22px 0}
-.stat{background:var(--card);border:1px solid rgba(255,255,255,.09);border-radius:14px;padding:16px}
-.stat .n{font-size:24px;font-weight:300}.stat .t{font-size:9px;letter-spacing:.14em;text-transform:uppercase;color:rgba(255,255,255,.45);margin-top:4px}
-.quick{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;margin-top:6px}
-.quick button{background:var(--card);border:1px solid rgba(255,255,255,.1);color:#fff;border-radius:10px;padding:9px 16px;cursor:pointer;font-size:12px}
+.home-in{max-width:640px;margin:11vh auto;padding:0 24px;text-align:center}
+.home-in img.mark{height:88px}
+.home-in img.word{height:40px;margin-top:16px;opacity:.95}
+.omni{display:flex;gap:0;margin:32px 0 10px;background:rgba(255,255,255,.055);border:1px solid transparent;border-radius:999px;padding:4px 4px 4px 20px}
+.omni:focus-within{border-color:var(--acc)}
+.omni input{flex:1;background:transparent;border:0;color:#fff;font-size:15px;outline:none}
+.omni button{background:#fff;color:#000;border:0;border-radius:999px;padding:10px 24px;font-weight:600;cursor:pointer;font-size:14px}
+.cards{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin:26px 0}
+.card{background:rgba(255,255,255,.03);border:1px solid var(--line);border-radius:16px;padding:18px;text-align:left}
+.card .n{font-size:26px;font-weight:200}.card .t{font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:rgba(255,255,255,.42);margin-top:4px}
+.card .sub{font-size:11px;color:rgba(255,255,255,.5);margin-top:8px}
+.quick{display:flex;gap:10px;justify-content:center;flex-wrap:wrap}
+.quick button{background:rgba(255,255,255,.04);border:1px solid var(--line);color:#fff;border-radius:12px;padding:10px 18px;cursor:pointer;font-size:12.5px}
 .quick button:hover{border-color:var(--acc)}
-.pop{position:absolute;top:52px;background:#101016;border:1px solid var(--acc);border-radius:12px;padding:16px;width:300px;display:none;z-index:30}
+.pop{position:absolute;top:60px;background:#141419;border:1px solid var(--line);border-radius:16px;padding:18px;width:320px;display:none;z-index:30;box-shadow:0 18px 50px rgba(0,0,0,.6)}
 .pop.open{display:block}
-.pop h4{font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--acc);margin-bottom:10px}
-.pop .row{display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid rgba(255,255,255,.07);font-size:13px}
-.pop small{color:rgba(255,255,255,.5);font-size:11px}
-.switch{background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.2);color:#fff;border-radius:8px;padding:5px 12px;cursor:pointer;font-size:12px}
-.switch.on{background:var(--acc);color:#000;border-color:var(--acc)}
-.drawer{position:absolute;top:0;right:0;bottom:0;width:330px;background:#101016;border-left:1px solid var(--acc);padding:22px;display:none;z-index:25;overflow:auto}
-.drawer.open{display:block}
-.drawer h3{font-size:12px;letter-spacing:.12em;text-transform:uppercase;color:var(--acc);margin:18px 0 8px}
-.drawer h3:first-child{margin-top:0}
-.drawer .row{display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid rgba(255,255,255,.07);font-size:13px;gap:10px}
-.drawer small{color:rgba(255,255,255,.5);display:block;margin-top:2px;font-size:11px}
-select{background:#000;color:#fff;border:1px solid rgba(255,255,255,.15);border-radius:8px;padding:8px 10px;font-size:12px;max-width:150px}
+.pop h4{font-size:12px;font-weight:600;margin-bottom:4px}
+.pop .site{font-size:12px;color:rgba(255,255,255,.5);margin-bottom:12px}
+.pop .row{display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-top:1px solid var(--line);font-size:13px}
+.pop .log{font-size:11px;color:rgba(255,255,255,.5);max-height:130px;overflow:auto;margin-top:8px}
+.switch{background:rgba(255,255,255,.1);border:0;color:#fff;border-radius:999px;padding:6px 16px;cursor:pointer;font-size:12px;font-weight:600}
+.switch.on{background:var(--acc);color:#000}
+.sheet{position:absolute;top:0;right:0;bottom:0;width:360px;background:#101014;border-left:1px solid var(--line);padding:26px;display:none;z-index:25;overflow:auto}
+.sheet.open{display:block}
+.sheet h3{font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:rgba(255,255,255,.45);margin:22px 0 6px}
+.sheet h3:first-child{margin-top:0}
+.sheet .row{display:flex;justify-content:space-between;align-items:center;padding:11px 0;border-bottom:1px solid var(--line);font-size:13.5px;gap:10px}
+.sheet small{color:rgba(255,255,255,.45);display:block;margin-top:2px;font-size:11.5px;font-weight:400}
+select{background:rgba(255,255,255,.07);color:#fff;border:0;border-radius:8px;padding:8px 10px;font-size:12.5px;max-width:150px}
 .swatches{display:flex;gap:8px}
-.sw{width:26px;height:26px;border-radius:50%;cursor:pointer;border:2px solid transparent}
+.sw{width:24px;height:24px;border-radius:50%;cursor:pointer;border:2px solid transparent}
 .sw.on{border-color:#fff}
-.findbar{display:none;gap:6px;padding:8px 12px;background:var(--bar);border-bottom:1px solid rgba(255,255,255,.1);align-items:center}
+.findbar{display:none;gap:6px;padding:8px 14px;background:var(--bar);align-items:center;font-size:12px}
 .findbar.open{display:flex}
-.findbar input{background:#000;border:1px solid rgba(255,255,255,.2);border-radius:8px;color:#fff;padding:6px 10px;font-size:12px;width:220px}
-.hist{max-width:760px;margin:30px auto;padding:0 22px}
-.hist h2{font-weight:200;font-size:26px;margin-bottom:14px}
-.hist .hrow{display:flex;justify-content:space-between;gap:12px;padding:9px 4px;border-bottom:1px solid rgba(255,255,255,.06);font-size:13px}
+.findbar input{background:rgba(255,255,255,.07);border:0;border-radius:8px;color:#fff;padding:7px 12px;font-size:12.5px;width:240px;outline:none}
+.hist{max-width:680px;margin:36px auto;padding:0 22px}
+.hist h2{font-weight:200;font-size:28px;margin-bottom:6px}
+.hist .hrow{display:flex;justify-content:space-between;gap:12px;padding:10px 2px;border-bottom:1px solid var(--line);font-size:13.5px}
 .hist .hrow a{color:#fff;text-decoration:none;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.hist .hrow span{color:rgba(255,255,255,.4);font-size:11px;white-space:nowrap}
+.hist .hrow a:hover{color:var(--acc)}
+.hist .hrow span{color:rgba(255,255,255,.35);font-size:11px;white-space:nowrap}
 input[type=file]{display:none}
-.zoombar{display:flex;gap:6px;align-items:center;font-size:12px}
 </style></head><body data-theme="purple">
 <div class="tabs" id="tabs"></div>
 <div class="main">
 <div class="top">
-<span class="brand"><img src="icon.png"></span>
-<button class="ibtn" id="back">←</button><button class="ibtn" id="fwd">→</button><button class="ibtn" id="rel">⟳</button>
-<button class="shieldbtn" id="shieldbtn">🛡 <b id="shn">0</b></button>
-<div class="omniwrap"><input id="url" placeholder="search or address  —  brave-style: suggestions below"><div id="sugg"></div></div>
-<button class="ibtn" id="go">go</button>
-<span class="pill" id="torpill">tor…</span>
-<span class="pill" id="relaypill">relay off</span>
-<button class="ibtn" id="findbtn" title="find in page (Ctrl+F)">⌕</button>
-<button class="ibtn" id="setbtn">⚙</button>
-<div class="pop" id="shieldpop" style="left:120px">
-<h4>Shields — <span id="sp-site">this site</span></h4>
-<div class="row"><div>Ads + trackers<small id="sp-count">blocked on this visit</small></div><button class="switch on" id="sp-ads">on</button></div>
-<div class="row"><div>Fingerprint farbling<small>UA rotate + location denied</small></div><button class="switch on" id="sp-fp">on</button></div>
-<div class="row"><div>Recent blocks</div><button class="switch" id="sp-log">view</button></div>
-<div id="sp-recent" style="font-size:11px;color:rgba(255,255,255,.55);max-height:120px;overflow:auto;margin-top:8px"></div>
+<div class="nav"><button id="back" title="back">←</button><button id="fwd" title="forward">→</button><button id="rel" title="reload">⟳</button></div>
+<button class="lion" id="shieldbtn" title="Shields">🛡 <b id="shn">0</b></button>
+<div class="omniwrap"><input id="url" placeholder="Search or enter address"><div id="sugg"></div></div>
+<button class="menu" id="setbtn" title="menu">⋮</button>
+<div class="pop" id="shieldpop" style="left:150px">
+<h4>Shields</h4><div class="site" id="sp-site">new tab</div>
+<div class="row"><div>Ads + trackers</div><button class="switch on" id="sp-ads">on</button></div>
+<div class="row"><div>Fingerprint protection</div><button class="switch on" id="sp-fp">on</button></div>
+<div class="row"><div>Connections upgraded</div><span style="font-size:12px;color:rgba(255,255,255,.5)" id="sp-up">HTTPS only</span></div>
+<div class="log" id="sp-recent"></div>
+</div>
+<div class="pop" id="menupop" style="right:12px">
+<div class="row"><div>New tab</div><button class="switch" id="m-new">open</button></div>
+<div class="row"><div>Vertical tabs</div><button class="switch" id="m-vt">off</button></div>
+<div class="row"><div>Find in page <small style="display:inline;color:rgba(255,255,255,.4)">Ctrl+F</small></div><button class="switch" id="m-find">open</button></div>
+<div class="row"><div>Zoom</div><div><button class="switch" id="zout">−</button> <span id="zv" style="font-size:12px">100%</span> <button class="switch" id="zin">+</button></div></div>
+<div class="row"><div>History</div><button class="switch" id="m-hist">open</button></div>
+<div class="row"><div>Tor circuit</div><button class="switch" id="m-tor">rescan</button></div>
+<div class="row"><div>Relay node <small id="m-relaysub">off</small></div><button class="switch" id="m-relay">off</button></div>
+<div class="row"><div>Settings</div><button class="switch" id="m-set">open</button></div>
 </div>
 </div>
-<div class="findbar" id="findbar"><input id="findq" placeholder="find in page…"><button class="ibtn" id="findnext">next</button><button class="ibtn" id="findx">✕</button><span class="zoombar" style="margin-left:auto">zoom <button class="ibtn" id="zout">−</button><span id="zv">100%</span><button class="ibtn" id="zin">+</button></span></div>
+<div class="findbar" id="findbar"><input id="findq" placeholder="Find in page…"><button class="menu" id="findnext">↓</button><button class="menu" id="findx">✕</button></div>
 <div id="views"><div class="page" id="home"><div class="home-in">
 <img class="mark" src="icon.png">
 <div><img class="word" src="wordmark.png"></div>
-<div class="omni"><input id="omni" placeholder="search the dark or the light…"><button id="omnigo">⌕</button></div>
-<div class="stats">
-<div class="stat"><div class="n" id="st-track">0</div><div class="t">Blocked</div></div>
-<div class="stat"><div class="n" id="st-tor">…</div><div class="t">Tor</div></div>
-<div class="stat"><div class="n" id="st-relay">off</div><div class="t">Relay</div></div>
-<div class="stat"><div class="n" id="st-tabs">0</div><div class="t">Tabs</div></div>
+<div class="omni"><input id="omni" placeholder="Search privately…"><button id="omnigo">→</button></div>
+<div class="cards">
+<div class="card"><div class="n" id="st-track">0</div><div class="t">Blocked</div><div class="sub" id="st-tor2">trackers + ads</div></div>
+<div class="card"><div class="n" id="st-tor">…</div><div class="t">Tor</div><div class="sub" id="torsub2">probing…</div></div>
+<div class="card"><div class="n" id="st-relay">off</div><div class="t">Relay</div><div class="sub"><a href="#" id="relaylearn" style="color:var(--acc)">what's this?</a></div></div>
 </div>
 <div class="quick" id="quick"></div>
-</div></div></div>
-<div class="drawer" id="drawer">
-<h3>Node</h3>
-<div class="row"><div>Relay node<small>opaque blobs, 100/day max. reads nothing.</small></div><button class="switch" id="rsw">off</button></div>
-<div class="row"><div>Tor circuit<small id="torsub">probing…</small></div><button class="switch" id="trescan">rescan</button></div>
-<h3>Identity</h3>
+</div></div>
+<div class="sheet" id="drawer">
+<h3>Shields defaults</h3>
 <div class="row"><div>Geo spoof<small>real location always denied</small></div><select id="geo"><option value="off">denied</option><option value="nyc">New York</option><option value="london">London</option><option value="tokyo">Tokyo</option><option value="zurich">Zurich</option></select></div>
-<div class="row"><div>User agent<small>fresh per tab</small></div><button class="switch" id="uanew">rotate</button></div>
 <div class="row"><div>Search engine</div><select id="engine"><option value="duck">DuckDuckGo</option><option value="brave">Brave Search</option><option value="google">Google</option></select></div>
-<h3>Look</h3>
+<div class="row"><div>Rotate identity<small>fresh user agent</small></div><button class="switch" id="uanew">go</button></div>
+<h3>Appearance</h3>
 <div class="row"><div>Theme</div><div class="swatches" id="swatches">
 <div class="sw on" data-t="purple" style="background:#a78bfa"></div>
 <div class="sw" data-t="red" style="background:#f87171"></div>
 <div class="sw" data-t="green" style="background:#34d399"></div>
 <div class="sw" data-t="white" style="background:#fff"></div>
 </div></div>
-<div class="row"><div>Tab strip<small>brave-style vertical tabs</small></div><button class="switch" id="vtsw">top</button></div>
-<div class="row"><div>Wallpaper<small>custom new-tab background</small></div><button class="switch" id="bgbtn">set</button></div>
+<div class="row"><div>Wallpaper</div><button class="switch" id="bgbtn">set</button></div>
 <input type="file" id="bgfile" accept="image/*">
-<div class="row"><div>Quick links<small>comma-separated URLs</small></div><button class="switch" id="qbtn">edit</button></div>
-<h3>Browse</h3>
-<div class="row"><div>History</div><button class="switch" id="histsw">open</button></div>
+<div class="row"><div>Quick links</div><button class="switch" id="qbtn">edit</button></div>
+<h3>Network</h3>
 <div class="row"><div>Shield log</div><button class="switch" id="logsw">open</button></div>
 <div class="row"><div>Wire spec<small>public — audit the pipe</small></div><button class="switch" id="wiresw">read</button></div>
 </div>
@@ -143,14 +144,14 @@ const store = {
   get(k, d) { try { const v = localStorage.getItem("wrath:" + k); return v === null ? d : JSON.parse(v); } catch (e) { return d; } },
   set(k, v) { try { localStorage.setItem("wrath:" + k, JSON.stringify(v)); } catch (e) {} },
 };
-let n = 0, cur = null, engine = store.get("engine", "duck"), zoom = 1, perSite = {};
+let n = 0, cur = null, engine = store.get("engine", "duck"), zoom = 1;
 const tabs = document.getElementById("tabs"), views = document.getElementById("views"), home = document.getElementById("home");
 const ENG = { duck: (q) => "https://duckduckgo.com/?q=" + encodeURIComponent(q), brave: (q) => "https://search.brave.com/search?q=" + encodeURIComponent(q), google: (q) => "https://www.google.com/search?q=" + encodeURIComponent(q) };
 document.getElementById("engine").value = engine;
 function hostOf(u) { try { return new URL(u).hostname.replace(/^www\./, ""); } catch (e) { return ""; } }
 function nav(v, u) {
   u = (u || "").trim(); if (!u) return;
-  if (u.startsWith("wrath://")) return openPage(u);
+  if (u.startsWith("wrath://")) return openPage(u.slice(8));
   if (!/^https?:\/\//.test(u)) {
     if (/^[a-z0-9.-]+\.[a-z]{2,}(\/.*)?$/i.test(u)) u = "https://" + u;
     else u = ENG[engine](u);
@@ -158,7 +159,6 @@ function nav(v, u) {
   try { v.src = u; } catch (e) { v.setAttribute("src", u); }
   document.getElementById("url").value = u;
 }
-// brave:// clone — internal pages rendered locally, never leave the box
 function openPage(which) {
   hideWebviews();
   let pg = document.getElementById("page-" + which);
@@ -168,12 +168,11 @@ function openPage(which) {
   views.appendChild(pg);
   if (which === "history") renderHist(pg);
   if (which === "shields") renderLog(pg);
-  if (which === "settings") { document.getElementById("drawer").classList.add("open"); pg.remove(); showHome(); return; }
 }
 function hideWebviews() { document.querySelectorAll("webview").forEach((x) => (x.style.display = "none")); document.querySelectorAll(".page").forEach((x) => (x.style.display = "none")); document.querySelectorAll(".tab").forEach((x) => x.classList.remove("on")); }
 async function renderHist(pg) {
   const h = await window.wrath.histGet().catch(() => []);
-  pg.innerHTML = "<div class='hist'><h2>History</h2><button class='ibtn' id='hclear'>clear all</button><div id='hl'></div></div>";
+  pg.innerHTML = "<div class='hist'><h2>History</h2><div id='hl'></div></div>";
   const box = pg.querySelector("#hl");
   (h || []).forEach((e) => {
     const d = document.createElement("div"); d.className = "hrow";
@@ -183,7 +182,6 @@ async function renderHist(pg) {
     d.querySelector("span").textContent = new Date(e.at).toLocaleString();
     box.appendChild(d);
   });
-  pg.querySelector("#hclear").onclick = async () => { await window.wrath.histClear(); renderHist(pg); };
 }
 async function renderLog(pg) {
   const s = await window.wrath.shieldLog().catch(() => ({ total: 0, log: [] }));
@@ -197,10 +195,9 @@ async function renderLog(pg) {
     box.appendChild(d);
   });
 }
-function tabsChanged() { document.getElementById("st-tabs").textContent = document.querySelectorAll(".tab[data-t]").length; }
+function tabsChanged() {}
 function addTab(u) {
-  n++;
-  closePages();
+  n++; closePages();
   const v = document.createElement("webview");
   v.setAttribute("partition", "persist:wrath");
   v.setAttribute("allowpopups", "");
@@ -219,12 +216,12 @@ function addTab(u) {
   v.addEventListener("did-navigate", upd); v.addEventListener("did-navigate-in-page", upd);
   v.addEventListener("did-fail-load", (e) => { if (v === cur && e.errorCode !== -3) document.getElementById("url").value = e.validatedURL + " — " + e.errorDescription; });
   try { v.setZoomFactor(zoom); } catch (e) {}
-  show(v, t); tabsChanged();
+  show(v, t);
   if (u) nav(v, u);
   return v;
 }
 function closePages() { document.querySelectorAll(".page").forEach((x) => { if (x.id !== "home") x.remove(); }); }
-function killTab(v, t) { v.remove(); t.remove(); if (cur === v) { const vs = document.querySelectorAll("webview"); if (vs.length) { const ts = document.querySelectorAll(".tab[data-t]"); closePages(); show(vs[vs.length-1], ts[ts.length-1]); } else showHome(); } tabsChanged(); }
+function killTab(v, t) { v.remove(); t.remove(); if (cur === v) { const vs = document.querySelectorAll("webview"); if (vs.length) { const ts = document.querySelectorAll(".tab[data-t]"); closePages(); show(vs[vs.length-1], ts[ts.length-1]); } else showHome(); } }
 function show(v, t) {
   cur = v; closePages();
   document.querySelectorAll("webview").forEach((x) => (x.style.display = "none"));
@@ -235,21 +232,24 @@ function show(v, t) {
 }
 function showHome() { cur = null; closePages(); document.querySelectorAll("webview").forEach((x) => (x.style.display = "none")); document.querySelectorAll(".tab").forEach((x) => x.classList.remove("on")); home.style.display = "block"; document.getElementById("url").value = ""; }
 (function () { const b = document.createElement("div"); b.className = "tab newtab"; b.id = "newtabbtn"; b.textContent = "+"; b.title = "new tab"; b.onclick = showHome; tabs.appendChild(b); })();
-// omnibox suggestions: history + engine
 const urlEl = document.getElementById("url"), sugg = document.getElementById("sugg");
 let sugIdx = -1;
 urlEl.addEventListener("input", async () => {
   const q = urlEl.value.trim();
   if (q.length < 2) { sugg.style.display = "none"; return; }
   const h = await window.wrath.histGet().catch(() => []);
-  const hits = (h || []).filter((e) => (e.url + e.title).toLowerCase().includes(q.toLowerCase())).slice(0, 5);
+  const hits = (h || []).filter((e) => (e.url + e.title).toLowerCase().includes(q.toLowerCase())).slice(0, 4);
   sugg.innerHTML = "";
   hits.forEach((e) => {
-    const d = document.createElement("div"); d.textContent = (e.title || e.url).slice(0, 60);
+    const d = document.createElement("div");
+    d.innerHTML = "<span>◷</span><span></span><span class='src'>history</span>";
+    d.querySelectorAll("span")[1].textContent = (e.title || e.url).slice(0, 52);
     d.onclick = () => { sugg.style.display = "none"; if (!cur) addTab(e.url); else nav(cur, e.url); };
     sugg.appendChild(d);
   });
-  const d = document.createElement("div"); d.textContent = "⌕ search: " + q.slice(0, 50); d.style.color = "var(--acc)";
+  const d = document.createElement("div");
+  d.innerHTML = "<span>⌕</span><span></span><span class='src'>search</span>";
+  d.querySelectorAll("span")[1].textContent = q.slice(0, 52);
   d.onclick = () => { sugg.style.display = "none"; const u = ENG[engine](q); if (!cur) addTab(u); else nav(cur, u); };
   sugg.appendChild(d);
   sugg.style.display = "block"; sugIdx = -1;
@@ -262,19 +262,18 @@ urlEl.addEventListener("keydown", (e) => {
     items.forEach((x, i) => x.classList.toggle("hot", i === sugIdx));
   } else if (e.key === "Enter") {
     if (sugIdx >= 0 && items[sugIdx]) items[sugIdx].click();
-    else document.getElementById("go").click();
+    else { const u = urlEl.value; if (!cur) addTab(u); else nav(cur, u); }
     sugg.style.display = "none";
   } else if (e.key === "Escape") sugg.style.display = "none";
 });
-document.addEventListener("click", (e) => { if (!e.target.closest(".omniwrap") && !e.target.closest("#shieldpop") && !e.target.closest("#shieldbtn")) { sugg.style.display = "none"; document.getElementById("shieldpop").classList.remove("open"); } });
-document.getElementById("go").onclick = () => { const u = urlEl.value; if (!cur) addTab(u); else nav(cur, u); };
+document.addEventListener("click", (e) => { if (!e.target.closest(".omniwrap") && !e.target.closest("#shieldpop") && !e.target.closest("#shieldbtn") && !e.target.closest("#menupop") && !e.target.closest("#setbtn")) { sugg.style.display = "none"; document.getElementById("shieldpop").classList.remove("open"); document.getElementById("menupop").classList.remove("open"); } });
 document.getElementById("omni").onkeydown = (e) => { if (e.key === "Enter") document.getElementById("omnigo").click(); };
 document.getElementById("omnigo").onclick = () => { const q = document.getElementById("omni").value; if (q) addTab(q); };
 document.getElementById("back").onclick = () => cur && cur.goBack();
 document.getElementById("fwd").onclick = () => cur && cur.goForward();
 document.getElementById("rel").onclick = () => cur && cur.reload();
-// shields popup (brave-style lion panel)
-document.getElementById("shieldbtn").onclick = (e) => { e.stopPropagation(); document.getElementById("shieldpop").classList.toggle("open"); refreshShieldPop(); };
+document.getElementById("setbtn").onclick = (e) => { e.stopPropagation(); document.getElementById("menupop").classList.toggle("open"); document.getElementById("shieldpop").classList.remove("open"); };
+document.getElementById("shieldbtn").onclick = (e) => { e.stopPropagation(); document.getElementById("shieldpop").classList.toggle("open"); document.getElementById("menupop").classList.remove("open"); refreshShieldPop(); };
 async function refreshShieldPop() {
   try {
     const u = cur ? cur.getURL() : "";
@@ -286,7 +285,7 @@ async function refreshShieldPop() {
     a.textContent = p.ads ? "on" : "off"; a.classList.toggle("on", !!p.ads);
     f.textContent = p.fp ? "on" : "off"; f.classList.toggle("on", !!p.fp);
     const s = await window.wrath.shieldLog().catch(() => ({ log: [] }));
-    document.getElementById("sp-recent").innerHTML = (s.log || []).slice(0, 8).map((e) => "✕ " + String(e.url || "").slice(0, 60)).join("<br>");
+    document.getElementById("sp-recent").innerHTML = (s.log || []).slice(0, 8).map((e) => "✕ " + String(e.url || "").slice(0, 56)).join("<br>");
   } catch (e) {}
 }
 document.getElementById("sp-ads").onclick = async () => {
@@ -301,9 +300,15 @@ document.getElementById("sp-fp").onclick = async () => {
   await window.wrath.siteSet(host, "fp", !p.fp);
   refreshShieldPop();
 };
-document.getElementById("sp-log").onclick = () => { document.getElementById("shieldpop").classList.remove("open"); openPage("shields"); };
-// find + zoom
-document.getElementById("findbtn").onclick = () => { document.getElementById("findbar").classList.toggle("open"); document.getElementById("findq").focus(); };
+// menu actions
+document.getElementById("m-new").onclick = () => { document.getElementById("menupop").classList.remove("open"); showHome(); };
+document.getElementById("m-find").onclick = () => { document.getElementById("menupop").classList.remove("open"); document.getElementById("findbar").classList.add("open"); document.getElementById("findq").focus(); };
+document.getElementById("m-hist").onclick = () => { document.getElementById("menupop").classList.remove("open"); openPage("history"); };
+document.getElementById("m-tor").onclick = () => window.wrath.torRescan();
+document.getElementById("m-relay").onclick = toggleRelay;
+document.getElementById("m-set").onclick = () => { document.getElementById("menupop").classList.remove("open"); document.getElementById("drawer").classList.toggle("open"); };
+if (store.get("vtabs", false)) { document.body.classList.add("vtabs"); document.getElementById("m-vt").textContent = "on"; }
+document.getElementById("m-vt").onclick = (e) => { const on = document.body.classList.toggle("vtabs"); e.target.textContent = on ? "on" : "off"; store.set("vtabs", on); };
 document.getElementById("findx").onclick = () => { document.getElementById("findbar").classList.remove("open"); cur && cur.stopFindInPage("clearSelection"); };
 document.getElementById("findq").onkeydown = (e) => { if (e.key === "Enter") document.getElementById("findnext").click(); };
 document.getElementById("findnext").onclick = () => { if (cur) cur.findInPage(document.getElementById("findq").value); };
@@ -311,18 +316,9 @@ document.addEventListener("keydown", (e) => { if ((e.ctrlKey || e.metaKey) && e.
 document.getElementById("zin").onclick = () => { zoom = Math.min(3, zoom + 0.1); applyZoom(); };
 document.getElementById("zout").onclick = () => { zoom = Math.max(0.3, zoom - 0.1); applyZoom(); };
 function applyZoom() { document.getElementById("zv").textContent = Math.round(zoom * 100) + "%"; document.querySelectorAll("webview").forEach((v) => { try { v.setZoomFactor(zoom); } catch (e) {} }); }
-document.getElementById("setbtn").onclick = () => document.getElementById("drawer").classList.toggle("open");
 document.getElementById("wiresw").onclick = () => addTab("https://github.com/d34lsae0-95r/wrath-relay-browser/blob/main/WIRE.md");
-document.getElementById("histsw").onclick = () => { document.getElementById("drawer").classList.remove("open"); openPage("history"); };
 document.getElementById("logsw").onclick = () => { document.getElementById("drawer").classList.remove("open"); openPage("shields"); };
 document.getElementById("engine").onchange = (e) => { engine = e.target.value; store.set("engine", engine); };
-// vertical tabs
-if (store.get("vtabs", false)) { document.body.classList.add("vtabs"); document.getElementById("vtsw").textContent = "side"; }
-document.getElementById("vtsw").onclick = (e) => {
-  const on = document.body.classList.toggle("vtabs");
-  e.target.textContent = on ? "side" : "top"; store.set("vtabs", on);
-};
-// theme
 const th = store.get("theme", "purple");
 document.body.setAttribute("data-theme", th);
 document.querySelectorAll(".sw").forEach((s) => {
@@ -345,7 +341,7 @@ function renderQuick() {
 }
 document.getElementById("qbtn").onclick = () => {
   const v = prompt("quick links (comma-separated URLs):", store.get("quick", []).join(", "));
-  if (v !== null) store.set("quick", v.split(",").map((s) => s.trim()).filter(Boolean).slice(0, 8));
+  if (v !== null) store.set("quick", v.split(",").map((s) => s.trim()).filter((x) => !!x).slice(0, 8));
   renderQuick();
 };
 renderQuick();
@@ -358,35 +354,29 @@ async function toggleRelay() {
   if (!h.relay && r.relay) alert("relay ON — opaque blobs only, max 100/day. one click off anytime.");
   relayUI();
 }
-document.getElementById("rsw").onclick = toggleRelay;
-document.getElementById("relaypill").onclick = toggleRelay;
-document.getElementById("trescan").onclick = () => window.wrath.torRescan();
-document.getElementById("torpill").onclick = () => window.wrath.torRescan();
-document.getElementById("uanew").onclick = async () => { const ua = await window.wrath.pickUA(); alert("identity rotated:\n" + ua + "\nnew tabs use it"); };
+document.getElementById("relaylearn").onclick = (e) => { e.preventDefault(); addTab("https://github.com/d34lsae0-95r/wrath-relay-browser/blob/main/WIRE.md"); };
+document.getElementById("uanew").onclick = async () => { await window.wrath.pickUA(); alert("identity rotated — new tabs use it"); };
 window.wrath.onTor((v) => {
-  const p = document.getElementById("torpill");
-  p.textContent = v ? "tor live" : "tor off · direct";
-  p.classList.toggle("tor-on", !!v);
-  document.getElementById("st-tor").textContent = v ? "live" : "direct";
-  document.getElementById("torsub").textContent = v ? "circuit via 127.0.0.1:9050" : "direct connection";
+  const u = document.getElementById("url");
+  u.classList.toggle("tor", !!v);
+  u.placeholder = v ? "Tor live — search or enter .onion / address" : "Search or enter address";
+  document.getElementById("st-tor").textContent = v ? "live" : "off";
+  document.getElementById("st-tor2").textContent = v ? "circuit via 127.0.0.1:9050" : "direct connection";
 });
 window.wrath.onShield((o) => {
   const total = (o && o.total !== undefined) ? o.total : o;
   document.getElementById("shn").textContent = total;
   document.getElementById("st-track").textContent = total;
-  if (o && o.url) document.getElementById("sp-count").textContent = "last: " + String(o.url).slice(0, 50);
 });
 async function relayUI() {
   try {
     const h = await window.wrath.health().catch(() => ({ relay: false }));
-    const rp = document.getElementById("relaypill");
-    rp.textContent = h.relay ? ("relay on · " + (h.used_today || 0) + "/100") : "relay off";
-    rp.classList.toggle("relay-on", !!h.relay);
     document.getElementById("st-relay").textContent = h.relay ? "on" : "off";
-    const sw = document.getElementById("rsw");
+    const sw = document.getElementById("m-relay");
     sw.textContent = h.relay ? "on" : "off"; sw.classList.toggle("on", !!h.relay);
+    document.getElementById("m-relaysub").textContent = h.relay ? ("on · " + (h.used_today || 0) + "/100 today") : "off";
     try { const sc = await window.wrath.shieldCount(); document.getElementById("shn").textContent = sc; document.getElementById("st-track").textContent = sc; } catch (e) {}
-  } catch (e) { document.getElementById("relaypill").textContent = "relay dead — restart"; }
+  } catch (e) {}
 }
 setInterval(relayUI, 5000); relayUI();
 </script></body></html>
