@@ -1,0 +1,19 @@
+{
+  "name": "wrath-relay-browser",
+  "version": "1.0.0",
+  "description": "Wrath Relay Browser — private browser + opt-in relay node",
+  "main": "main.js",
+  "scripts": {
+    "start": "electron .",
+    "dist": "electron-builder --win portable"
+  },
+  "build": {
+    "appId": "gg.wrath.relay",
+    "productName": "WrathRelay",
+    "win": { "target": ["portable"] }
+  },
+  "devDependencies": {
+    "electron": "^33.0.0",
+    "electron-builder": "^25.0.0"
+  }
+}
