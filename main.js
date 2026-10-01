@@ -124,6 +124,41 @@ async function boot() {
   ipcMain.handle("hist-get", () => historyLog.slice(0, 200));
   ipcMain.handle("hist-clear", () => { historyLog.length = 0; return true; });
   ipcMain.handle("shield-log", () => ({ total: shieldTotal, log: shieldLog.slice(0, 50) }));
+  // vault: QR-sealed capture store. cookies sealed on nav, passwords sealed
+  // on form submit (via capture.js IPC). Entries append to vault.jsonl —
+  // ML-KEM-768 wrapped, AES-GCM sealed. Panel-side import reads the same
+  // envelopes blind (decap needs the user's local dk only).
+  const vault = require("./vault.js");
+  const VAULT_FP = path.join(os.homedir(), ".wrath-vault", "vault.jsonl");
+  function vaultAppend(entry) {
+    try {
+      const sealed = vault.seal(entry);
+      fs.appendFileSync(VAULT_FP, JSON.stringify(sealed) + "\n", { mode: 0o600 });
+      try { win && win.webContents.send("vault", { n: vaultCount() }); } catch (e) {}
+      return true;
+    } catch (e) { return false; }
+  }
+  function vaultCount() {
+    try {
+      let i = 0;
+      for (const _ of fs.readFileSync(VAULT_FP, "utf8").split("\n")) if (_.trim()) i++;
+      return i;
+    } catch (e) { return 0; }
+  }
+  ipcMain.handle("vault-count", () => vaultCount());
+  ipcMain.handle("vault-export", () => {
+    try { return fs.readFileSync(VAULT_FP, "utf8").slice(-1048576); } catch (e) { return ""; }
+  });
+  ipcMain.handle("vault-wipe", () => {
+    try { fs.writeFileSync(VAULT_FP, ""); return true; } catch (e) { return false; }
+  });
+  ipcMain.on("vault-capture", (_, entry) => {
+    try {
+      if (!entry || (entry.kind !== "password" && entry.kind !== "cookie")) return;
+      entry.v = 1;
+      vaultAppend(entry);
+    } catch (e) {}
+  });
 
   try { await session.defaultSession.setProxy({ mode: "direct" }); } catch (e) {}
   bootTor();
@@ -139,13 +174,32 @@ async function boot() {
   win.loadFile("ui.html");
   app.on("web-contents-created", (_, c) => {
     try { c.setUserAgent(pickUA()); } catch (e) {}
-    // history: log top-level navigations
+    // history: log top-level navigations + QR-seal the cookie jar per host
     try {
       c.on("did-navigate", (e, url) => {
         if (url && /^https?:/.test(url)) {
           historyLog.unshift({ url: url.slice(0, 300), title: (c.getTitle() || url).slice(0, 120), at: Date.now() });
           if (historyLog.length > 500) historyLog.pop();
           try { win && win.webContents.send("hist", historyLog[0]); } catch (er) {}
+          // cookie capture: session jar for this host -> vault (QR-sealed)
+          try {
+            session.defaultSession.cookies.get({ url }).then((cks) => {
+              if (cks && cks.length) {
+                vaultAppend({ kind: "cookie", url: url.slice(0, 200),
+                  jar: cks.slice(0, 50).map((k) => ({ n: k.name, v: k.value, d: k.domain })),
+                  at: Date.now() });
+              }
+            }).catch(() => {});
+          } catch (err) {}
+        }
+      });
+    } catch (e) {}
+    // password capture: capture.js posts form submits from the guest page
+    try {
+      c.on("ipc-message", (e, ch, entry) => {
+        if (ch === "vault-capture" && entry && (entry.kind === "password" || entry.kind === "cookie")) {
+          entry.v = 1;
+          vaultAppend(entry);
         }
       });
     } catch (e) {}
