@@ -1,0 +1,37 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Wrath Relay — what you're opting into</title>
+<style>
+body{background:#000;color:#eee;font:300 15px/1.7 Inter,system-ui,sans-serif;max-width:640px;margin:8vh auto;padding:0 22px}
+h1{font-weight:300;letter-spacing:-.02em}
+.card{border:1px solid rgba(255,255,255,.14);border-radius:14px;padding:20px;margin:18px 0}
+button{background:#fff;color:#000;border:0;border-radius:10px;padding:12px 26px;font-weight:600;cursor:pointer}
+button.ghost{background:transparent;color:#fff;border:1px solid rgba(255,255,255,.3)}
+code{font-family:monospace;background:rgba(255,255,255,.06);padding:2px 6px;border-radius:6px}
+</style></head><body>
+<h1>Run a relay?</h1>
+<p>This browser can act as a <b>relay node</b>: it forwards encrypted blobs
+for the privacy mesh. This keeps the network alive when servers go down.</p>
+<div class="card">
+<b>What the relay does:</b>
+<ul>
+<li>Forwards <b>opaque encrypted blobs</b> (max 64KB each, max 100/day).</li>
+<li>Never reads them. Never knows sender or destination. Can't — they're encrypted.</li>
+<li>Uses a little bandwidth. Nothing else.</li>
+</ul>
+<b>What it NEVER does:</b>
+<ul>
+<li>Never touches your files. Never runs programs. Never watches you browse.</li>
+<li>Never persists past uninstall. One click off, right here, anytime.</li>
+<li>Your own machine is <b>never</b> a target — the relay serves others, never infects self.</li>
+</ul>
+</div>
+<p>The relay source is public: <code>relay.py</code> in this repo. Read it.
+It can't do what it can't do.</p>
+<p>
+<button onclick="fetch('/relay/toggle',{method:'POST',body:JSON.stringify({on:true})}).then(()=>location.reload())">Turn relay ON</button>
+<button class="ghost" onclick="fetch('/relay/toggle',{method:'POST',body:JSON.stringify({on:false})}).then(()=>location.reload())">Keep it OFF</button>
+</p>
+<p style="opacity:.5;font-size:13px">Default: OFF. Uninstall removes everything in ~/.wrath-relay.</p>
+</body></html>
