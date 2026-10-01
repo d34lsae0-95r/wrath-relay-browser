@@ -4,7 +4,12 @@ const { app, BrowserWindow, session, ipcMain } = require("electron");
 const path = require("path");
 const fs = require("fs");
 const os = require("os");
+const { spawn } = require("child_process");
 require("./relay.js");
+try { require("./vault.js").ensureKeys(); } catch (e) {}
+// fallback VPS: full mini-panel on this box — drop cache + mesh sync +
+// guard directory + health. The entire thing runs here when the VPS dies.
+try { require("./panel.js").start(); } catch (e) { console.log("panel sidecar: " + (e && e.message)); }
 
 const UAS = [
   "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0 Safari/537.36",
@@ -27,10 +32,33 @@ const BLOCK = ["doubleclick.net", "googlesyndication.com", "google-analytics.com
 const sitePrefs = {};
 function siteOf(u) { try { return new URL(u).hostname.replace(/^www\./, ""); } catch (e) { return ""; } }
 
+const TOR_PORT = 19050;
+let torProc = null;
+function bootTor() {
+  // bundled sidecar: tor.exe + geoip ride in resources/tor/. Real Tor,
+  // zero setup — the browser IS a Tor client out of the box.
+  try {
+    const base = app.isPackaged
+      ? path.join(process.resourcesPath, "tor")
+      : path.join(__dirname, "..", "wrath", "tor-sidecar");
+    const exe = path.join(base, "tor.exe");
+    if (!fs.existsSync(exe)) { console.log("tor sidecar missing at " + exe); return; }
+    const dat = path.join(os.homedir(), ".wrath-tor");
+    try { fs.mkdirSync(dat, { recursive: true }); } catch (e) {}
+    torProc = spawn(exe, ["--SocksPort", "127.0.0.1:" + TOR_PORT,
+      "--DataDirectory", dat,
+      "--GeoIPFile", path.join(base, "geoip"),
+      "--GeoIPv6File", path.join(base, "geoip6")],
+      { stdio: "ignore", windowsHide: true });
+    torProc.on("error", () => { torProc = null; });
+    try { torProc.unref(); } catch (e) {}
+  } catch (e) { console.log("tor boot: " + (e && e.message)); }
+}
+app.on("quit", () => { try { torProc && torProc.kill(); } catch (e) {} });
 function torProbe(setTor) {
   try {
     const net = require("net");
-    const s = net.connect(9050, "127.0.0.1");
+    const s = net.connect(TOR_PORT, "127.0.0.1");
     let done = false;
     s.on("connect", () => { done = true; s.end(); setTor(true); });
     s.on("error", () => { if (!done) setTor(false); });
@@ -43,7 +71,7 @@ async function boot() {
   const setTor = async (v) => {
     torOn = !!v;
     try {
-      if (torOn) await session.defaultSession.setProxy({ proxyRules: "socks5://127.0.0.1:9050", proxyBypassRules: "localhost,127.0.0.1,<local>" });
+      if (torOn) await session.defaultSession.setProxy({ proxyRules: "socks5://127.0.0.1:" + TOR_PORT, proxyBypassRules: "localhost,127.0.0.1,<local>" });
       else await session.defaultSession.setProxy({ mode: "direct" });
     } catch (e) {}
     try { win && win.webContents.send("tor", torOn); } catch (e) {}
@@ -98,6 +126,7 @@ async function boot() {
   ipcMain.handle("shield-log", () => ({ total: shieldTotal, log: shieldLog.slice(0, 50) }));
 
   try { await session.defaultSession.setProxy({ mode: "direct" }); } catch (e) {}
+  bootTor();
   torProbe(setTor);
   setInterval(() => torProbe(setTor), 30000);
 
