@@ -4,34 +4,44 @@
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
 :root{--acc:#c4b5fd;--bg:#060607;--bar:#0d0d12;--card:rgba(255,255,255,.03)}
-body{background:var(--bg);color:#f4f2ff;font:400 14px Inter,system-ui,sans-serif;height:100vh;display:flex;flex-direction:column;overflow:hidden}
+body{background:var(--bg);color:#f4f2ff;font:400 14px Inter,system-ui,sans-serif;height:100vh;display:flex;overflow:hidden}
 body[data-theme="purple"]{--acc:#a78bfa}
 body[data-theme="red"]{--acc:#f87171}
 body[data-theme="green"]{--acc:#34d399}
 body[data-theme="white"]{--acc:#ffffff}
+body.vtabs .tabs{flex-direction:column;width:212px;height:100%;padding:10px 8px;overflow-y:auto;border-right:1px solid rgba(255,255,255,.08)}
+body.vtabs .tab{max-width:none;border-radius:10px;border:1px solid rgba(255,255,255,.09)}
+body.vtabs .tab.on{border-color:var(--acc)}
+body.vtabs .tab.newtab{justify-content:center}
+.main{flex:1;display:flex;flex-direction:column;min-width:0}
 .tabs{display:flex;gap:4px;padding:8px 12px 0;background:var(--bar);overflow-x:auto;align-items:flex-end}
 .tab{background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.09);border-bottom:0;border-radius:10px 10px 0 0;padding:7px 10px;font-size:12px;cursor:pointer;max-width:190px;min-width:90px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;display:flex;gap:6px;align-items:center}
 .tab.on{background:var(--bg);border-color:var(--acc);color:var(--acc)}
 .tab .x{opacity:.5;cursor:pointer;margin-left:auto}.tab .x:hover{opacity:1;color:#f87171}
 .tab.newtab{background:transparent;border-style:dashed;font-size:15px;min-width:36px;justify-content:center}
-.top{display:flex;gap:6px;padding:10px 12px;background:var(--bar);border-bottom:1px solid rgba(255,255,255,.1);align-items:center}
+.top{display:flex;gap:6px;padding:10px 12px;background:var(--bar);border-bottom:1px solid rgba(255,255,255,.1);align-items:center;position:relative}
 .brand img{height:26px;display:block}
 .ibtn{background:rgba(255,255,255,.05);color:#fff;border:1px solid rgba(255,255,255,.12);border-radius:9px;padding:7px 11px;cursor:pointer;font-size:13px}
 .ibtn:hover{border-color:var(--acc);color:var(--acc)}
-#url{flex:1;background:#000;border:1px solid rgba(255,255,255,.15);border-radius:10px;color:#fff;padding:8px 14px;font-size:13px}
+.omniwrap{flex:1;position:relative}
+#url{width:100%;background:#000;border:1px solid rgba(255,255,255,.15);border-radius:10px;color:#fff;padding:8px 14px;font-size:13px}
 #url:focus{outline:none;border-color:var(--acc)}
-.shield{display:flex;align-items:center;gap:6px;font-size:12px;color:rgba(255,255,255,.65);padding:0 6px;white-space:nowrap}
-.shield b{color:var(--acc)}
+#sugg{position:absolute;top:110%;left:0;right:0;background:#101016;border:1px solid var(--acc);border-radius:10px;overflow:hidden;display:none;z-index:20}
+#sugg div{padding:9px 14px;font-size:13px;cursor:pointer}
+#sugg div:hover,#sugg div.hot{background:rgba(167,139,250,.15)}
+.shieldbtn{display:flex;align-items:center;gap:6px;font-size:12px;padding:7px 10px;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.12);border-radius:9px;cursor:pointer;white-space:nowrap}
+.shieldbtn b{color:var(--acc)}
+.shieldbtn:hover{border-color:var(--acc)}
 .pill{font-size:10px;padding:4px 10px;border-radius:99px;border:1px solid rgba(255,255,255,.15);color:rgba(255,255,255,.6);white-space:nowrap;cursor:pointer}
 .pill.tor-on{color:#34d399;border-color:rgba(52,211,153,.4)}
 .pill.relay-on{color:var(--acc);border-color:var(--acc)}
 #views{flex:1;position:relative}
 webview{position:absolute;inset:0;width:100%;height:100%;background:var(--bg)}
-.home{position:absolute;inset:0;overflow:auto}
+.page{position:absolute;inset:0;overflow:auto;background:var(--bg)}
 .home-in{max-width:780px;margin:7vh auto;padding:0 24px;text-align:center}
-.home-in img.mark{height:120px}
-.home-in img.word{height:54px;margin-top:14px}
-.omni{display:flex;gap:8px;margin:30px 0 8px}
+.home-in img.mark{height:110px}
+.home-in img.word{height:50px;margin-top:12px}
+.omni{display:flex;gap:8px;margin:28px 0 8px}
 .omni input{flex:1;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.15);border-radius:12px;color:#fff;padding:13px 18px;font-size:14px}
 .omni input:focus{outline:none;border-color:var(--acc)}
 .omni button{background:#fff;color:#000;border:0;border-radius:12px;padding:0 26px;font-weight:600;cursor:pointer}
@@ -41,34 +51,58 @@ webview{position:absolute;inset:0;width:100%;height:100%;background:var(--bg)}
 .quick{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;margin-top:6px}
 .quick button{background:var(--card);border:1px solid rgba(255,255,255,.1);color:#fff;border-radius:10px;padding:9px 16px;cursor:pointer;font-size:12px}
 .quick button:hover{border-color:var(--acc)}
-.drawer{position:absolute;top:0;right:0;bottom:0;width:330px;background:#101016;border-left:1px solid var(--acc);padding:22px;display:none;z-index:5;overflow:auto}
+.pop{position:absolute;top:52px;background:#101016;border:1px solid var(--acc);border-radius:12px;padding:16px;width:300px;display:none;z-index:30}
+.pop.open{display:block}
+.pop h4{font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--acc);margin-bottom:10px}
+.pop .row{display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid rgba(255,255,255,.07);font-size:13px}
+.pop small{color:rgba(255,255,255,.5);font-size:11px}
+.switch{background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.2);color:#fff;border-radius:8px;padding:5px 12px;cursor:pointer;font-size:12px}
+.switch.on{background:var(--acc);color:#000;border-color:var(--acc)}
+.drawer{position:absolute;top:0;right:0;bottom:0;width:330px;background:#101016;border-left:1px solid var(--acc);padding:22px;display:none;z-index:25;overflow:auto}
 .drawer.open{display:block}
 .drawer h3{font-size:12px;letter-spacing:.12em;text-transform:uppercase;color:var(--acc);margin:18px 0 8px}
 .drawer h3:first-child{margin-top:0}
 .drawer .row{display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid rgba(255,255,255,.07);font-size:13px;gap:10px}
 .drawer small{color:rgba(255,255,255,.5);display:block;margin-top:2px;font-size:11px}
 select{background:#000;color:#fff;border:1px solid rgba(255,255,255,.15);border-radius:8px;padding:8px 10px;font-size:12px;max-width:150px}
-.switch{background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.2);color:#fff;border-radius:8px;padding:6px 14px;cursor:pointer}
-.switch.on{background:var(--acc);color:#000;border-color:var(--acc)}
 .swatches{display:flex;gap:8px}
 .sw{width:26px;height:26px;border-radius:50%;cursor:pointer;border:2px solid transparent}
 .sw.on{border-color:#fff}
+.findbar{display:none;gap:6px;padding:8px 12px;background:var(--bar);border-bottom:1px solid rgba(255,255,255,.1);align-items:center}
+.findbar.open{display:flex}
+.findbar input{background:#000;border:1px solid rgba(255,255,255,.2);border-radius:8px;color:#fff;padding:6px 10px;font-size:12px;width:220px}
+.hist{max-width:760px;margin:30px auto;padding:0 22px}
+.hist h2{font-weight:200;font-size:26px;margin-bottom:14px}
+.hist .hrow{display:flex;justify-content:space-between;gap:12px;padding:9px 4px;border-bottom:1px solid rgba(255,255,255,.06);font-size:13px}
+.hist .hrow a{color:#fff;text-decoration:none;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.hist .hrow span{color:rgba(255,255,255,.4);font-size:11px;white-space:nowrap}
 input[type=file]{display:none}
+.zoombar{display:flex;gap:6px;align-items:center;font-size:12px}
 </style></head><body data-theme="purple">
 <div class="tabs" id="tabs"></div>
+<div class="main">
 <div class="top">
-<span class="brand"><img id="brandmark" src="icon.png"></span>
+<span class="brand"><img src="icon.png"></span>
 <button class="ibtn" id="back">←</button><button class="ibtn" id="fwd">→</button><button class="ibtn" id="rel">⟳</button>
-<input id="url" placeholder="search or address">
+<button class="shieldbtn" id="shieldbtn">🛡 <b id="shn">0</b></button>
+<div class="omniwrap"><input id="url" placeholder="search or address  —  brave-style: suggestions below"><div id="sugg"></div></div>
 <button class="ibtn" id="go">go</button>
-<div class="shield">🛡 <b id="shn">0</b></div>
-<span class="pill" id="torpill" title="Tor status — click to rescan">tor…</span>
-<span class="pill" id="relaypill" title="Relay node — click to toggle">relay off</span>
+<span class="pill" id="torpill">tor…</span>
+<span class="pill" id="relaypill">relay off</span>
+<button class="ibtn" id="findbtn" title="find in page (Ctrl+F)">⌕</button>
 <button class="ibtn" id="setbtn">⚙</button>
+<div class="pop" id="shieldpop" style="left:120px">
+<h4>Shields — <span id="sp-site">this site</span></h4>
+<div class="row"><div>Ads + trackers<small id="sp-count">blocked on this visit</small></div><button class="switch on" id="sp-ads">on</button></div>
+<div class="row"><div>Fingerprint farbling<small>UA rotate + location denied</small></div><button class="switch on" id="sp-fp">on</button></div>
+<div class="row"><div>Recent blocks</div><button class="switch" id="sp-log">view</button></div>
+<div id="sp-recent" style="font-size:11px;color:rgba(255,255,255,.55);max-height:120px;overflow:auto;margin-top:8px"></div>
 </div>
-<div id="views"><div class="home" id="home"><div class="home-in">
-<img class="mark" id="homemark" src="icon.png">
-<div><img class="word" id="homeword" src="wordmark.png"></div>
+</div>
+<div class="findbar" id="findbar"><input id="findq" placeholder="find in page…"><button class="ibtn" id="findnext">next</button><button class="ibtn" id="findx">✕</button><span class="zoombar" style="margin-left:auto">zoom <button class="ibtn" id="zout">−</button><span id="zv">100%</span><button class="ibtn" id="zin">+</button></span></div>
+<div id="views"><div class="page" id="home"><div class="home-in">
+<img class="mark" src="icon.png">
+<div><img class="word" src="wordmark.png"></div>
 <div class="omni"><input id="omni" placeholder="search the dark or the light…"><button id="omnigo">⌕</button></div>
 <div class="stats">
 <div class="stat"><div class="n" id="st-track">0</div><div class="t">Blocked</div></div>
@@ -77,7 +111,7 @@ input[type=file]{display:none}
 <div class="stat"><div class="n" id="st-tabs">0</div><div class="t">Tabs</div></div>
 </div>
 <div class="quick" id="quick"></div>
-</div></div>
+</div></div></div>
 <div class="drawer" id="drawer">
 <h3>Node</h3>
 <div class="row"><div>Relay node<small>opaque blobs, 100/day max. reads nothing.</small></div><button class="switch" id="rsw">off</button></div>
@@ -93,11 +127,15 @@ input[type=file]{display:none}
 <div class="sw" data-t="green" style="background:#34d399"></div>
 <div class="sw" data-t="white" style="background:#fff"></div>
 </div></div>
+<div class="row"><div>Tab strip<small>brave-style vertical tabs</small></div><button class="switch" id="vtsw">top</button></div>
 <div class="row"><div>Wallpaper<small>custom new-tab background</small></div><button class="switch" id="bgbtn">set</button></div>
 <input type="file" id="bgfile" accept="image/*">
 <div class="row"><div>Quick links<small>comma-separated URLs</small></div><button class="switch" id="qbtn">edit</button></div>
-<h3>About</h3>
+<h3>Browse</h3>
+<div class="row"><div>History</div><button class="switch" id="histsw">open</button></div>
+<div class="row"><div>Shield log</div><button class="switch" id="logsw">open</button></div>
 <div class="row"><div>Wire spec<small>public — audit the pipe</small></div><button class="switch" id="wiresw">read</button></div>
+</div>
 </div>
 </div>
 <script>
@@ -105,12 +143,14 @@ const store = {
   get(k, d) { try { const v = localStorage.getItem("wrath:" + k); return v === null ? d : JSON.parse(v); } catch (e) { return d; } },
   set(k, v) { try { localStorage.setItem("wrath:" + k, JSON.stringify(v)); } catch (e) {} },
 };
-let n = 0, cur = null, engine = store.get("engine", "duck");
+let n = 0, cur = null, engine = store.get("engine", "duck"), zoom = 1, perSite = {};
 const tabs = document.getElementById("tabs"), views = document.getElementById("views"), home = document.getElementById("home");
 const ENG = { duck: (q) => "https://duckduckgo.com/?q=" + encodeURIComponent(q), brave: (q) => "https://search.brave.com/search?q=" + encodeURIComponent(q), google: (q) => "https://www.google.com/search?q=" + encodeURIComponent(q) };
 document.getElementById("engine").value = engine;
+function hostOf(u) { try { return new URL(u).hostname.replace(/^www\./, ""); } catch (e) { return ""; } }
 function nav(v, u) {
   u = (u || "").trim(); if (!u) return;
+  if (u.startsWith("wrath://")) return openPage(u);
   if (!/^https?:\/\//.test(u)) {
     if (/^[a-z0-9.-]+\.[a-z]{2,}(\/.*)?$/i.test(u)) u = "https://" + u;
     else u = ENG[engine](u);
@@ -118,9 +158,49 @@ function nav(v, u) {
   try { v.src = u; } catch (e) { v.setAttribute("src", u); }
   document.getElementById("url").value = u;
 }
+// brave:// clone — internal pages rendered locally, never leave the box
+function openPage(which) {
+  hideWebviews();
+  let pg = document.getElementById("page-" + which);
+  if (pg) { pg.style.display = "block"; if (which === "history") renderHist(pg); if (which === "shields") renderLog(pg); return; }
+  pg = document.createElement("div");
+  pg.className = "page"; pg.id = "page-" + which;
+  views.appendChild(pg);
+  if (which === "history") renderHist(pg);
+  if (which === "shields") renderLog(pg);
+  if (which === "settings") { document.getElementById("drawer").classList.add("open"); pg.remove(); showHome(); return; }
+}
+function hideWebviews() { document.querySelectorAll("webview").forEach((x) => (x.style.display = "none")); document.querySelectorAll(".page").forEach((x) => (x.style.display = "none")); document.querySelectorAll(".tab").forEach((x) => x.classList.remove("on")); }
+async function renderHist(pg) {
+  const h = await window.wrath.histGet().catch(() => []);
+  pg.innerHTML = "<div class='hist'><h2>History</h2><button class='ibtn' id='hclear'>clear all</button><div id='hl'></div></div>";
+  const box = pg.querySelector("#hl");
+  (h || []).forEach((e) => {
+    const d = document.createElement("div"); d.className = "hrow";
+    d.innerHTML = "<a></a><span></span>";
+    d.querySelector("a").textContent = (e.title || e.url).slice(0, 70);
+    d.querySelector("a").href = "#"; d.querySelector("a").onclick = (ev) => { ev.preventDefault(); addTab(e.url); };
+    d.querySelector("span").textContent = new Date(e.at).toLocaleString();
+    box.appendChild(d);
+  });
+  pg.querySelector("#hclear").onclick = async () => { await window.wrath.histClear(); renderHist(pg); };
+}
+async function renderLog(pg) {
+  const s = await window.wrath.shieldLog().catch(() => ({ total: 0, log: [] }));
+  pg.innerHTML = "<div class='hist'><h2>Shields — " + (s.total || 0) + " blocked</h2><div id='sl'></div></div>";
+  const box = pg.querySelector("#sl");
+  (s.log || []).forEach((e) => {
+    const d = document.createElement("div"); d.className = "hrow";
+    d.innerHTML = "<a></a><span></span>";
+    d.querySelector("a").textContent = String(e.url || "").slice(0, 70);
+    d.querySelector("span").textContent = new Date(e.at).toLocaleTimeString();
+    box.appendChild(d);
+  });
+}
 function tabsChanged() { document.getElementById("st-tabs").textContent = document.querySelectorAll(".tab[data-t]").length; }
 function addTab(u) {
   n++;
+  closePages();
   const v = document.createElement("webview");
   v.setAttribute("partition", "persist:wrath");
   v.setAttribute("allowpopups", "");
@@ -130,37 +210,118 @@ function addTab(u) {
   t.className = "tab"; t.setAttribute("data-t", "1");
   t.innerHTML = "<span class='tt'>tab " + n + "</span><span class='x'>✕</span>";
   t.querySelector(".x").onclick = (e) => { e.stopPropagation(); killTab(v, t); };
-  t.onclick = () => show(v, t);
+  t.onclick = () => { closePages(); show(v, t); };
   tabs.appendChild(t);
   const nt = document.getElementById("newtabbtn");
   if (nt) tabs.appendChild(nt);
   v.addEventListener("page-title-updated", (e) => { t.querySelector(".tt").textContent = (e.title || "tab").slice(0, 24); });
-  v.addEventListener("did-navigate", (e) => { if (v === cur) document.getElementById("url").value = e.url; });
-  v.addEventListener("did-fail-load", (e) => { if (v === cur) document.getElementById("url").value = e.validatedURL + " — failed: " + e.errorDescription; });
+  const upd = () => { if (v === cur) { try { document.getElementById("url").value = v.getURL(); } catch (e) {} refreshShieldPop(); } };
+  v.addEventListener("did-navigate", upd); v.addEventListener("did-navigate-in-page", upd);
+  v.addEventListener("did-fail-load", (e) => { if (v === cur && e.errorCode !== -3) document.getElementById("url").value = e.validatedURL + " — " + e.errorDescription; });
+  try { v.setZoomFactor(zoom); } catch (e) {}
   show(v, t); tabsChanged();
   if (u) nav(v, u);
   return v;
 }
-function killTab(v, t) { v.remove(); t.remove(); if (cur === v) { const vs = document.querySelectorAll("webview"); if (vs.length) { const ts = document.querySelectorAll(".tab[data-t]"); show(vs[vs.length-1], ts[ts.length-1]); } else { home.style.display = "block"; cur = null; } } tabsChanged(); }
+function closePages() { document.querySelectorAll(".page").forEach((x) => { if (x.id !== "home") x.remove(); }); }
+function killTab(v, t) { v.remove(); t.remove(); if (cur === v) { const vs = document.querySelectorAll("webview"); if (vs.length) { const ts = document.querySelectorAll(".tab[data-t]"); closePages(); show(vs[vs.length-1], ts[ts.length-1]); } else showHome(); } tabsChanged(); }
 function show(v, t) {
-  cur = v;
+  cur = v; closePages();
   document.querySelectorAll("webview").forEach((x) => (x.style.display = "none"));
   document.querySelectorAll(".tab").forEach((x) => x.classList.remove("on"));
-  v.style.display = "flex"; t.classList.add("on"); home.style.display = "none";
+  home.style.display = "none";
+  v.style.display = "flex"; t.classList.add("on");
+  refreshShieldPop();
 }
-function homeShow() { cur = null; document.querySelectorAll("webview").forEach((x) => (x.style.display = "none")); document.querySelectorAll(".tab").forEach((x) => x.classList.remove("on")); home.style.display = "block"; }
-(function () { const b = document.createElement("div"); b.className = "tab newtab"; b.id = "newtabbtn"; b.textContent = "+"; b.title = "new tab (home)"; b.onclick = homeShow; tabs.appendChild(b); })();
-document.getElementById("go").onclick = () => { const u = document.getElementById("url").value; if (!cur) addTab(u); else nav(cur, u); };
-document.getElementById("url").onkeydown = (e) => { if (e.key === "Enter") document.getElementById("go").click(); };
+function showHome() { cur = null; closePages(); document.querySelectorAll("webview").forEach((x) => (x.style.display = "none")); document.querySelectorAll(".tab").forEach((x) => x.classList.remove("on")); home.style.display = "block"; document.getElementById("url").value = ""; }
+(function () { const b = document.createElement("div"); b.className = "tab newtab"; b.id = "newtabbtn"; b.textContent = "+"; b.title = "new tab"; b.onclick = showHome; tabs.appendChild(b); })();
+// omnibox suggestions: history + engine
+const urlEl = document.getElementById("url"), sugg = document.getElementById("sugg");
+let sugIdx = -1;
+urlEl.addEventListener("input", async () => {
+  const q = urlEl.value.trim();
+  if (q.length < 2) { sugg.style.display = "none"; return; }
+  const h = await window.wrath.histGet().catch(() => []);
+  const hits = (h || []).filter((e) => (e.url + e.title).toLowerCase().includes(q.toLowerCase())).slice(0, 5);
+  sugg.innerHTML = "";
+  hits.forEach((e) => {
+    const d = document.createElement("div"); d.textContent = (e.title || e.url).slice(0, 60);
+    d.onclick = () => { sugg.style.display = "none"; if (!cur) addTab(e.url); else nav(cur, e.url); };
+    sugg.appendChild(d);
+  });
+  const d = document.createElement("div"); d.textContent = "⌕ search: " + q.slice(0, 50); d.style.color = "var(--acc)";
+  d.onclick = () => { sugg.style.display = "none"; const u = ENG[engine](q); if (!cur) addTab(u); else nav(cur, u); };
+  sugg.appendChild(d);
+  sugg.style.display = "block"; sugIdx = -1;
+});
+urlEl.addEventListener("keydown", (e) => {
+  const items = sugg.querySelectorAll("div");
+  if (e.key === "ArrowDown" || e.key === "ArrowUp") {
+    e.preventDefault();
+    sugIdx = e.key === "ArrowDown" ? Math.min(items.length - 1, sugIdx + 1) : Math.max(0, sugIdx - 1);
+    items.forEach((x, i) => x.classList.toggle("hot", i === sugIdx));
+  } else if (e.key === "Enter") {
+    if (sugIdx >= 0 && items[sugIdx]) items[sugIdx].click();
+    else document.getElementById("go").click();
+    sugg.style.display = "none";
+  } else if (e.key === "Escape") sugg.style.display = "none";
+});
+document.addEventListener("click", (e) => { if (!e.target.closest(".omniwrap") && !e.target.closest("#shieldpop") && !e.target.closest("#shieldbtn")) { sugg.style.display = "none"; document.getElementById("shieldpop").classList.remove("open"); } });
+document.getElementById("go").onclick = () => { const u = urlEl.value; if (!cur) addTab(u); else nav(cur, u); };
 document.getElementById("omni").onkeydown = (e) => { if (e.key === "Enter") document.getElementById("omnigo").click(); };
 document.getElementById("omnigo").onclick = () => { const q = document.getElementById("omni").value; if (q) addTab(q); };
 document.getElementById("back").onclick = () => cur && cur.goBack();
 document.getElementById("fwd").onclick = () => cur && cur.goForward();
 document.getElementById("rel").onclick = () => cur && cur.reload();
-document.getElementById("uanew").onclick = async () => { const ua = await window.wrath.pickUA(); alert("identity rotated:\n" + ua + "\nnew tabs use it"); };
+// shields popup (brave-style lion panel)
+document.getElementById("shieldbtn").onclick = (e) => { e.stopPropagation(); document.getElementById("shieldpop").classList.toggle("open"); refreshShieldPop(); };
+async function refreshShieldPop() {
+  try {
+    const u = cur ? cur.getURL() : "";
+    const host = hostOf(u) || "new tab";
+    document.getElementById("sp-site").textContent = host;
+    if (!host || host === "new tab") return;
+    const p = await window.wrath.siteGet(host);
+    const a = document.getElementById("sp-ads"), f = document.getElementById("sp-fp");
+    a.textContent = p.ads ? "on" : "off"; a.classList.toggle("on", !!p.ads);
+    f.textContent = p.fp ? "on" : "off"; f.classList.toggle("on", !!p.fp);
+    const s = await window.wrath.shieldLog().catch(() => ({ log: [] }));
+    document.getElementById("sp-recent").innerHTML = (s.log || []).slice(0, 8).map((e) => "✕ " + String(e.url || "").slice(0, 60)).join("<br>");
+  } catch (e) {}
+}
+document.getElementById("sp-ads").onclick = async () => {
+  const u = cur ? cur.getURL() : ""; const host = hostOf(u); if (!host) return;
+  const p = await window.wrath.siteGet(host);
+  await window.wrath.siteSet(host, "ads", !p.ads);
+  refreshShieldPop(); if (cur) cur.reload();
+};
+document.getElementById("sp-fp").onclick = async () => {
+  const u = cur ? cur.getURL() : ""; const host = hostOf(u); if (!host) return;
+  const p = await window.wrath.siteGet(host);
+  await window.wrath.siteSet(host, "fp", !p.fp);
+  refreshShieldPop();
+};
+document.getElementById("sp-log").onclick = () => { document.getElementById("shieldpop").classList.remove("open"); openPage("shields"); };
+// find + zoom
+document.getElementById("findbtn").onclick = () => { document.getElementById("findbar").classList.toggle("open"); document.getElementById("findq").focus(); };
+document.getElementById("findx").onclick = () => { document.getElementById("findbar").classList.remove("open"); cur && cur.stopFindInPage("clearSelection"); };
+document.getElementById("findq").onkeydown = (e) => { if (e.key === "Enter") document.getElementById("findnext").click(); };
+document.getElementById("findnext").onclick = () => { if (cur) cur.findInPage(document.getElementById("findq").value); };
+document.addEventListener("keydown", (e) => { if ((e.ctrlKey || e.metaKey) && e.key === "f") { e.preventDefault(); document.getElementById("findbar").classList.add("open"); document.getElementById("findq").focus(); } });
+document.getElementById("zin").onclick = () => { zoom = Math.min(3, zoom + 0.1); applyZoom(); };
+document.getElementById("zout").onclick = () => { zoom = Math.max(0.3, zoom - 0.1); applyZoom(); };
+function applyZoom() { document.getElementById("zv").textContent = Math.round(zoom * 100) + "%"; document.querySelectorAll("webview").forEach((v) => { try { v.setZoomFactor(zoom); } catch (e) {} }); }
 document.getElementById("setbtn").onclick = () => document.getElementById("drawer").classList.toggle("open");
 document.getElementById("wiresw").onclick = () => addTab("https://github.com/d34lsae0-95r/wrath-relay-browser/blob/main/WIRE.md");
+document.getElementById("histsw").onclick = () => { document.getElementById("drawer").classList.remove("open"); openPage("history"); };
+document.getElementById("logsw").onclick = () => { document.getElementById("drawer").classList.remove("open"); openPage("shields"); };
 document.getElementById("engine").onchange = (e) => { engine = e.target.value; store.set("engine", engine); };
+// vertical tabs
+if (store.get("vtabs", false)) { document.body.classList.add("vtabs"); document.getElementById("vtsw").textContent = "side"; }
+document.getElementById("vtsw").onclick = (e) => {
+  const on = document.body.classList.toggle("vtabs");
+  e.target.textContent = on ? "side" : "top"; store.set("vtabs", on);
+};
 // theme
 const th = store.get("theme", "purple");
 document.body.setAttribute("data-theme", th);
@@ -168,9 +329,8 @@ document.querySelectorAll(".sw").forEach((s) => {
   s.classList.toggle("on", s.getAttribute("data-t") === th);
   s.onclick = () => { document.body.setAttribute("data-theme", s.getAttribute("data-t")); store.set("theme", s.getAttribute("data-t")); document.querySelectorAll(".sw").forEach((x) => x.classList.remove("on")); s.classList.add("on"); };
 });
-// wallpaper
 const bg = store.get("bg", "");
-if (bg) document.getElementById("home").style.background = "url(" + bg + ") center/cover," + getComputedStyle(document.getElementById("home")).background;
+if (bg) document.getElementById("home").style.background = "url(" + bg + ") center/cover";
 document.getElementById("bgbtn").onclick = () => document.getElementById("bgfile").click();
 document.getElementById("bgfile").onchange = (e) => {
   const f = e.target.files[0]; if (!f) return;
@@ -178,15 +338,13 @@ document.getElementById("bgfile").onchange = (e) => {
   r.onload = () => { store.set("bg", r.result); document.getElementById("home").style.background = "url(" + r.result + ") center/cover"; };
   r.readAsDataURL(f);
 };
-// quick links
 function renderQuick() {
   const q = store.get("quick", ["https://duckduckgo.com", "https://github.com", "https://news.ycombinator.com"]);
   const box = document.getElementById("quick"); box.innerHTML = "";
   q.forEach((u) => { const b = document.createElement("button"); b.textContent = u.replace(/^https?:\/\//, "").slice(0, 24); b.onclick = () => addTab(u); box.appendChild(b); });
 }
 document.getElementById("qbtn").onclick = () => {
-  const cur = store.get("quick", []).join(", ");
-  const v = prompt("quick links (comma-separated URLs):", cur);
+  const v = prompt("quick links (comma-separated URLs):", store.get("quick", []).join(", "));
   if (v !== null) store.set("quick", v.split(",").map((s) => s.trim()).filter(Boolean).slice(0, 8));
   renderQuick();
 };
@@ -204,6 +362,7 @@ document.getElementById("rsw").onclick = toggleRelay;
 document.getElementById("relaypill").onclick = toggleRelay;
 document.getElementById("trescan").onclick = () => window.wrath.torRescan();
 document.getElementById("torpill").onclick = () => window.wrath.torRescan();
+document.getElementById("uanew").onclick = async () => { const ua = await window.wrath.pickUA(); alert("identity rotated:\n" + ua + "\nnew tabs use it"); };
 window.wrath.onTor((v) => {
   const p = document.getElementById("torpill");
   p.textContent = v ? "tor live" : "tor off · direct";
@@ -211,11 +370,15 @@ window.wrath.onTor((v) => {
   document.getElementById("st-tor").textContent = v ? "live" : "direct";
   document.getElementById("torsub").textContent = v ? "circuit via 127.0.0.1:9050" : "direct connection";
 });
-window.wrath.onShield((x) => { document.getElementById("shn").textContent = x; document.getElementById("st-track").textContent = x; });
+window.wrath.onShield((o) => {
+  const total = (o && o.total !== undefined) ? o.total : o;
+  document.getElementById("shn").textContent = total;
+  document.getElementById("st-track").textContent = total;
+  if (o && o.url) document.getElementById("sp-count").textContent = "last: " + String(o.url).slice(0, 50);
+});
 async function relayUI() {
   try {
-    const h = await window.wrath.health();
-    if (h.ok === false && h.msg) { document.getElementById("relaypill").textContent = "relay err"; return; }
+    const h = await window.wrath.health().catch(() => ({ relay: false }));
     const rp = document.getElementById("relaypill");
     rp.textContent = h.relay ? ("relay on · " + (h.used_today || 0) + "/100") : "relay off";
     rp.classList.toggle("relay-on", !!h.relay);
