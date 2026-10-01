@@ -1,33 +1,77 @@
 <!doctype html>
 <html><head><meta charset="utf-8">
+<title>Wrath</title>
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
-body{background:#0a0a0d;color:#f4f2ff;font:400 14px Inter,system-ui,sans-serif;height:100vh;display:flex;flex-direction:column;overflow:hidden}
-.bar{display:flex;gap:8px;padding:10px;background:#101016;border-bottom:1px solid rgba(167,139,250,.25);align-items:center}
-.bar button{background:rgba(167,139,250,.12);color:#fff;border:1px solid rgba(167,139,250,.35);border-radius:8px;padding:7px 12px;cursor:pointer;font-size:13px}
-.bar button:hover{background:rgba(167,139,250,.25)}
-.bar input{flex:1;background:#000;border:1px solid rgba(255,255,255,.15);border-radius:8px;color:#fff;padding:8px 12px;font-size:13px}
-.tabs{display:flex;gap:4px;padding:8px 10px 0;background:#101016}
-.tab{background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);border-bottom:0;border-radius:8px 8px 0 0;padding:7px 14px;font-size:12px;cursor:pointer;max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.tab.on{background:#0a0a0d;border-color:rgba(167,139,250,.4);color:#c4b5fd}
-.relay{margin-left:auto;font-size:11px;display:flex;gap:8px;align-items:center;color:rgba(255,255,255,.6)}
-.relay .dot{width:8px;height:8px;border-radius:50%;background:#555}
-.relay.on .dot{background:#34d399;box-shadow:0 0 8px #34d399}
+:root{--acc:#a78bfa;--bg:#0a0a0d;--bar:#121218}
+body{background:var(--bg);color:#f4f2ff;font:400 14px Inter,system-ui,sans-serif;height:100vh;display:flex;flex-direction:column;overflow:hidden}
+.top{display:flex;gap:6px;padding:10px 12px;background:var(--bar);border-bottom:1px solid rgba(167,139,250,.25);align-items:center}
+.logo{font-weight:700;letter-spacing:.14em;font-size:15px;padding:0 8px 0 2px}
+.logo i{color:var(--acc);font-style:normal}
+.ibtn{background:rgba(255,255,255,.05);color:#fff;border:1px solid rgba(255,255,255,.12);border-radius:8px;padding:7px 11px;cursor:pointer;font-size:13px}
+.ibtn:hover{background:rgba(167,139,250,.2);border-color:var(--acc)}
+#url{flex:1;background:#000;border:1px solid rgba(255,255,255,.15);border-radius:10px;color:#fff;padding:8px 14px;font-size:13px}
+#url:focus{outline:none;border-color:var(--acc)}
+.shield{display:flex;align-items:center;gap:6px;font-size:12px;color:rgba(255,255,255,.65);padding:0 6px}
+.shield b{color:var(--acc)}
+.pill{font-size:10px;padding:3px 9px;border-radius:99px;border:1px solid rgba(255,255,255,.15);color:rgba(255,255,255,.6)}
+.pill.tor-on{color:#34d399;border-color:rgba(52,211,153,.4)}
+.pill.relay-on{color:var(--acc);border-color:rgba(167,139,250,.5)}
+.tabs{display:flex;gap:4px;padding:8px 12px 0;background:var(--bar);overflow-x:auto}
+.tab{background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.09);border-bottom:0;border-radius:9px 9px 0 0;padding:7px 12px;font-size:12px;cursor:pointer;max-width:190px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;display:flex;gap:6px;align-items:center}
+.tab.on{background:var(--bg);border-color:rgba(167,139,250,.4);color:#c4b5fd}
+.tab .x{opacity:.5;cursor:pointer}.tab .x:hover{opacity:1;color:#f87171}
 #views{flex:1;position:relative}
 webview{position:absolute;inset:0;width:100%;height:100%}
-.home{position:absolute;inset:0;display:grid;place-items:center;background:radial-gradient(800px 400px at 50% 20%,rgba(124,92,240,.15),transparent),#0a0a0d}
-.home h1{font-weight:200;font-size:52px;letter-spacing:-.03em}
-.home h1 i{color:#a78bfa;font-style:italic}
-.home p{color:rgba(255,255,255,.5);margin-top:10px;font-size:13px}
+.home{position:absolute;inset:0;overflow:auto;background:radial-gradient(900px 420px at 50% 8%,rgba(124,92,240,.16),transparent),var(--bg)}
+.home-in{max-width:760px;margin:9vh auto;padding:0 24px;text-align:center}
+.home-in h1{font-weight:200;font-size:58px;letter-spacing:-.03em}
+.home-in h1 i{color:var(--acc);font-style:italic}
+.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin:30px 0}
+.stat{background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.09);border-radius:14px;padding:18px}
+.stat .n{font-size:28px;font-weight:300}.stat .t{font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:rgba(255,255,255,.45);margin-top:4px}
+.setrow{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;margin-top:8px}
+select{background:#000;color:#fff;border:1px solid rgba(255,255,255,.15);border-radius:8px;padding:8px 10px;font-size:12px}
+.drawer{position:absolute;top:0;right:0;bottom:0;width:320px;background:#101016;border-left:1px solid rgba(167,139,250,.3);padding:22px;display:none;z-index:5;overflow:auto}
+.drawer.open{display:block}
+.drawer h3{font-size:13px;letter-spacing:.1em;text-transform:uppercase;color:var(--acc);margin:0 0 12px}
+.drawer .row{display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid rgba(255,255,255,.07);font-size:13px}
+.drawer small{color:rgba(255,255,255,.5);display:block;margin-top:2px;font-size:11px}
+.switch{background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.2);color:#fff;border-radius:8px;padding:6px 14px;cursor:pointer}
+.switch.on{background:var(--acc);color:#000;border-color:var(--acc)}
 </style></head><body>
 <div class="tabs" id="tabs"></div>
-<div class="bar">
-<button id="back">←</button><button id="fwd">→</button><button id="rel">⟳</button><button id="new">+</button>
-<input id="url" placeholder="search or address — Tor when available, direct fallback">
-<button id="go">go</button>
-<div class="relay" id="relay"><span class="dot"></span><span id="rtx">relay off</span><button id="rtg">turn on</button></div>
+<div class="top">
+<span class="logo">W<i>R</i>ATH</span>
+<button class="ibtn" id="back">←</button><button class="ibtn" id="fwd">→</button><button class="ibtn" id="rel">⟳</button><button class="ibtn" id="new">+</button>
+<input id="url" placeholder="search or address">
+<button class="ibtn" id="go">go</button>
+<div class="shield">🛡 <b id="shn">0</b> blocked</div>
+<span class="pill" id="torpill">tor…</span>
+<span class="pill" id="relaypill">relay off</span>
+<button class="ibtn" id="setbtn">⚙</button>
 </div>
-<div id="views"><div class="home" id="home"><div style="text-align:center"><h1>WRATH <i>relay</i></h1><p>private browser. opt-in node. reads nothing, forwards blobs.</p></div></div></div>
+<div id="views"><div class="home" id="home"><div class="home-in">
+<h1>WRATH <i>relay</i></h1>
+<p style="color:rgba(255,255,255,.5);font-size:13px">faster than brave. private by architecture. opt-in node.</p>
+<div class="stats">
+<div class="stat"><div class="n" id="st-track">0</div><div class="t">Trackers Blocked</div></div>
+<div class="stat"><div class="n" id="st-tor">…</div><div class="t">Tor Circuit</div></div>
+<div class="stat"><div class="n" id="st-relay">off</div><div class="t">Relay Node</div></div>
+</div>
+<div class="setrow">
+<select id="geo"><option value="off">location: denied</option><option value="nyc">spoof: New York</option><option value="london">spoof: London</option><option value="tokyo">spoof: Tokyo</option><option value="zurich">spoof: Zurich</option></select>
+<button class="ibtn" id="uanew">↻ new identity (UA)</button>
+</div>
+</div></div>
+<div class="drawer" id="drawer">
+<h3>Settings</h3>
+<div class="row"><div>Relay node<small>forward opaque blobs, max 100/day. reads nothing.</small></div><button class="switch" id="rsw">off</button></div>
+<div class="row"><div>Rescan Tor<small>re-probe 127.0.0.1:9050</small></div><button class="switch" id="trescan">scan</button></div>
+<div class="row"><div>Geo spoof<small>deny real location always</small></div><select id="geo2"><option value="off">denied</option><option value="nyc">New York</option><option value="london">London</option><option value="tokyo">Tokyo</option><option value="zurich">Zurich</option></select></div>
+<div class="row"><div>Wire spec<small>public WIRE.md — audit the pipe</small></div><button class="switch" id="wiresw">read</button></div>
+</div>
+</div>
 <script>
 let n = 0, cur = null;
 const tabs = document.getElementById("tabs"), views = document.getElementById("views"), home = document.getElementById("home");
@@ -42,14 +86,16 @@ function addTab(u) {
   n++;
   const v = document.createElement("webview");
   v.setAttribute("partition", "persist:wrath");
+  v.setAttribute("allowpopups", "");
   v.style.display = "none";
   views.appendChild(v);
   const t = document.createElement("div");
-  t.className = "tab"; t.textContent = "tab " + n;
+  t.className = "tab";
+  t.innerHTML = "<span class='tt'>tab " + n + "</span><span class='x'>✕</span>";
+  t.querySelector(".x").onclick = (e) => { e.stopPropagation(); v.remove(); t.remove(); if (cur === v) { home.style.display = "block"; cur = null; } };
   t.onclick = () => show(v, t);
-  t.ondblclick = () => { v.remove(); t.remove(); };
   tabs.appendChild(t);
-  v.addEventListener("page-title-updated", (e) => { t.textContent = (e.title || "tab").slice(0, 28); t.title = e.title; });
+  v.addEventListener("page-title-updated", (e) => { t.querySelector(".tt").textContent = (e.title || "tab").slice(0, 26); });
   v.addEventListener("did-navigate", (e) => { if (v === cur) document.getElementById("url").value = e.url; });
   show(v, t);
   if (u) nav(v, u);
@@ -62,24 +108,47 @@ function show(v, t) {
   v.style.display = "flex"; t.classList.add("on"); home.style.display = "none";
 }
 document.getElementById("new").onclick = () => addTab();
-document.getElementById("go").onclick = () => { const u = document.getElementById("url").value.trim(); if (!cur) addTab(u); else nav(cur, u); };
+document.getElementById("go").onclick = () => { const u = document.getElementById("url").value.trim(); if (!u) return; if (!cur) addTab(u); else nav(cur, u); };
 document.getElementById("url").onkeydown = (e) => { if (e.key === "Enter") document.getElementById("go").click(); };
 document.getElementById("back").onclick = () => cur && cur.goBack();
 document.getElementById("fwd").onclick = () => cur && cur.goForward();
 document.getElementById("rel").onclick = () => cur && cur.reload();
+document.getElementById("uanew").onclick = async () => { const ua = await window.wrath.pickUA(); alert("identity rotated:\n" + ua + "\napplies to new tabs"); };
+document.getElementById("setbtn").onclick = () => document.getElementById("drawer").classList.toggle("open");
+document.getElementById("wiresw").onclick = () => addTab("https://github.com/d34lsae0-95r/wrath-relay-browser/blob/main/WIRE.md");
+async function syncGeo(v) {
+  await window.wrath.setGeo(v);
+  document.getElementById("geo").value = v; document.getElementById("geo2").value = v;
+}
+document.getElementById("geo").onchange = (e) => syncGeo(e.target.value);
+document.getElementById("geo2").onchange = (e) => syncGeo(e.target.value);
 async function relayUI() {
   const h = await window.wrath.health();
-  const box = document.getElementById("relay");
-  box.classList.toggle("on", !!h.relay);
-  document.getElementById("rtx").textContent = h.relay ? ("relay on · " + (h.used_today || 0) + "/100") : "relay off";
-  document.getElementById("rtg").textContent = h.relay ? "turn off" : "turn on";
+  const rp = document.getElementById("relaypill");
+  rp.textContent = h.relay ? ("relay on · " + (h.used_today || 0) + "/100") : "relay off";
+  rp.classList.toggle("relay-on", !!h.relay);
+  document.getElementById("st-relay").textContent = h.relay ? "on" : "off";
+  const sw = document.getElementById("rsw");
+  sw.textContent = h.relay ? "on" : "off"; sw.classList.toggle("on", !!h.relay);
+  const sc = await window.wrath.shieldCount().catch(() => 0);
+  document.getElementById("shn").textContent = sc;
+  document.getElementById("st-track").textContent = sc;
 }
-document.getElementById("rtg").onclick = async () => {
+document.getElementById("rsw").onclick = async () => {
   const h = await window.wrath.health();
   const r = await window.wrath.toggle(!h.relay);
-  if (!h.relay && r.relay) alert("relay ON — forwarding opaque blobs (max 100/day). read WIRE.md. one click off anytime.");
+  if (!h.relay && r.relay) alert("relay ON — opaque blobs only, max 100/day. one click off anytime.");
   relayUI();
 };
-setInterval(relayUI, 5000); relayUI();
-addTab();
+document.getElementById("trescan").onclick = () => window.wrath.torRescan();
+window.wrath.onTor((v) => {
+  const p = document.getElementById("torpill");
+  p.textContent = v ? "tor live" : "tor off · direct";
+  p.classList.toggle("tor-on", !!v);
+  document.getElementById("st-tor").textContent = v ? "live" : "direct";
+});
+window.wrath.onShield((x) => { document.getElementById("shn").textContent = x; document.getElementById("st-track").textContent = x; });
+setInterval(relayUI, 5000);
+(async () => { document.getElementById("geo").value = await window.wrath.getGeo(); document.getElementById("geo2").value = document.getElementById("geo").value; })();
+relayUI();
 </script></body></html>
