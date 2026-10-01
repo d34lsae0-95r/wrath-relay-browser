@@ -1,0 +1,85 @@
+<!doctype html>
+<html><head><meta charset="utf-8">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:#0a0a0d;color:#f4f2ff;font:400 14px Inter,system-ui,sans-serif;height:100vh;display:flex;flex-direction:column;overflow:hidden}
+.bar{display:flex;gap:8px;padding:10px;background:#101016;border-bottom:1px solid rgba(167,139,250,.25);align-items:center}
+.bar button{background:rgba(167,139,250,.12);color:#fff;border:1px solid rgba(167,139,250,.35);border-radius:8px;padding:7px 12px;cursor:pointer;font-size:13px}
+.bar button:hover{background:rgba(167,139,250,.25)}
+.bar input{flex:1;background:#000;border:1px solid rgba(255,255,255,.15);border-radius:8px;color:#fff;padding:8px 12px;font-size:13px}
+.tabs{display:flex;gap:4px;padding:8px 10px 0;background:#101016}
+.tab{background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);border-bottom:0;border-radius:8px 8px 0 0;padding:7px 14px;font-size:12px;cursor:pointer;max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.tab.on{background:#0a0a0d;border-color:rgba(167,139,250,.4);color:#c4b5fd}
+.relay{margin-left:auto;font-size:11px;display:flex;gap:8px;align-items:center;color:rgba(255,255,255,.6)}
+.relay .dot{width:8px;height:8px;border-radius:50%;background:#555}
+.relay.on .dot{background:#34d399;box-shadow:0 0 8px #34d399}
+#views{flex:1;position:relative}
+webview{position:absolute;inset:0;width:100%;height:100%}
+.home{position:absolute;inset:0;display:grid;place-items:center;background:radial-gradient(800px 400px at 50% 20%,rgba(124,92,240,.15),transparent),#0a0a0d}
+.home h1{font-weight:200;font-size:52px;letter-spacing:-.03em}
+.home h1 i{color:#a78bfa;font-style:italic}
+.home p{color:rgba(255,255,255,.5);margin-top:10px;font-size:13px}
+</style></head><body>
+<div class="tabs" id="tabs"></div>
+<div class="bar">
+<button id="back">←</button><button id="fwd">→</button><button id="rel">⟳</button><button id="new">+</button>
+<input id="url" placeholder="search or address — Tor when available, direct fallback">
+<button id="go">go</button>
+<div class="relay" id="relay"><span class="dot"></span><span id="rtx">relay off</span><button id="rtg">turn on</button></div>
+</div>
+<div id="views"><div class="home" id="home"><div style="text-align:center"><h1>WRATH <i>relay</i></h1><p>private browser. opt-in node. reads nothing, forwards blobs.</p></div></div></div>
+<script>
+let n = 0, cur = null;
+const tabs = document.getElementById("tabs"), views = document.getElementById("views"), home = document.getElementById("home");
+function nav(v, u) {
+  if (!/^https?:\/\//.test(u)) {
+    if (/^[a-z0-9.-]+\.[a-z]{2,}(\/.*)?$/i.test(u)) u = "https://" + u;
+    else u = "https://duckduckgo.com/?q=" + encodeURIComponent(u);
+  }
+  v.src = u; document.getElementById("url").value = u;
+}
+function addTab(u) {
+  n++;
+  const v = document.createElement("webview");
+  v.setAttribute("partition", "persist:wrath");
+  v.style.display = "none";
+  views.appendChild(v);
+  const t = document.createElement("div");
+  t.className = "tab"; t.textContent = "tab " + n;
+  t.onclick = () => show(v, t);
+  t.ondblclick = () => { v.remove(); t.remove(); };
+  tabs.appendChild(t);
+  v.addEventListener("page-title-updated", (e) => { t.textContent = (e.title || "tab").slice(0, 28); t.title = e.title; });
+  v.addEventListener("did-navigate", (e) => { if (v === cur) document.getElementById("url").value = e.url; });
+  show(v, t);
+  if (u) nav(v, u);
+  return v;
+}
+function show(v, t) {
+  cur = v;
+  document.querySelectorAll("webview").forEach((x) => (x.style.display = "none"));
+  document.querySelectorAll(".tab").forEach((x) => x.classList.remove("on"));
+  v.style.display = "flex"; t.classList.add("on"); home.style.display = "none";
+}
+document.getElementById("new").onclick = () => addTab();
+document.getElementById("go").onclick = () => { const u = document.getElementById("url").value.trim(); if (!cur) addTab(u); else nav(cur, u); };
+document.getElementById("url").onkeydown = (e) => { if (e.key === "Enter") document.getElementById("go").click(); };
+document.getElementById("back").onclick = () => cur && cur.goBack();
+document.getElementById("fwd").onclick = () => cur && cur.goForward();
+document.getElementById("rel").onclick = () => cur && cur.reload();
+async function relayUI() {
+  const h = await window.wrath.health();
+  const box = document.getElementById("relay");
+  box.classList.toggle("on", !!h.relay);
+  document.getElementById("rtx").textContent = h.relay ? ("relay on · " + (h.used_today || 0) + "/100") : "relay off";
+  document.getElementById("rtg").textContent = h.relay ? "turn off" : "turn on";
+}
+document.getElementById("rtg").onclick = async () => {
+  const h = await window.wrath.health();
+  const r = await window.wrath.toggle(!h.relay);
+  if (!h.relay && r.relay) alert("relay ON — forwarding opaque blobs (max 100/day). read WIRE.md. one click off anytime.");
+  relayUI();
+};
+setInterval(relayUI, 5000); relayUI();
+addTab();
+</script></body></html>
