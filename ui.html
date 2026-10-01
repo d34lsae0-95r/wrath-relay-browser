@@ -3,85 +3,122 @@
 <title>Wrath</title>
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
-:root{--acc:#a78bfa;--bg:#0a0a0d;--bar:#121218}
+:root{--acc:#c4b5fd;--bg:#060607;--bar:#0d0d12;--card:rgba(255,255,255,.03)}
 body{background:var(--bg);color:#f4f2ff;font:400 14px Inter,system-ui,sans-serif;height:100vh;display:flex;flex-direction:column;overflow:hidden}
-.top{display:flex;gap:6px;padding:10px 12px;background:var(--bar);border-bottom:1px solid rgba(167,139,250,.25);align-items:center}
-.logo{font-weight:700;letter-spacing:.14em;font-size:15px;padding:0 8px 0 2px}
-.logo i{color:var(--acc);font-style:normal}
-.ibtn{background:rgba(255,255,255,.05);color:#fff;border:1px solid rgba(255,255,255,.12);border-radius:8px;padding:7px 11px;cursor:pointer;font-size:13px}
-.ibtn:hover{background:rgba(167,139,250,.2);border-color:var(--acc)}
+body[data-theme="purple"]{--acc:#a78bfa}
+body[data-theme="red"]{--acc:#f87171}
+body[data-theme="green"]{--acc:#34d399}
+body[data-theme="white"]{--acc:#ffffff}
+.tabs{display:flex;gap:4px;padding:8px 12px 0;background:var(--bar);overflow-x:auto;align-items:flex-end}
+.tab{background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.09);border-bottom:0;border-radius:10px 10px 0 0;padding:7px 10px;font-size:12px;cursor:pointer;max-width:190px;min-width:90px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;display:flex;gap:6px;align-items:center}
+.tab.on{background:var(--bg);border-color:var(--acc);color:var(--acc)}
+.tab .x{opacity:.5;cursor:pointer;margin-left:auto}.tab .x:hover{opacity:1;color:#f87171}
+.tab.newtab{background:transparent;border-style:dashed;font-size:15px;min-width:36px;justify-content:center}
+.top{display:flex;gap:6px;padding:10px 12px;background:var(--bar);border-bottom:1px solid rgba(255,255,255,.1);align-items:center}
+.brand img{height:26px;display:block}
+.ibtn{background:rgba(255,255,255,.05);color:#fff;border:1px solid rgba(255,255,255,.12);border-radius:9px;padding:7px 11px;cursor:pointer;font-size:13px}
+.ibtn:hover{border-color:var(--acc);color:var(--acc)}
 #url{flex:1;background:#000;border:1px solid rgba(255,255,255,.15);border-radius:10px;color:#fff;padding:8px 14px;font-size:13px}
 #url:focus{outline:none;border-color:var(--acc)}
-.shield{display:flex;align-items:center;gap:6px;font-size:12px;color:rgba(255,255,255,.65);padding:0 6px}
+.shield{display:flex;align-items:center;gap:6px;font-size:12px;color:rgba(255,255,255,.65);padding:0 6px;white-space:nowrap}
 .shield b{color:var(--acc)}
-.pill{font-size:10px;padding:3px 9px;border-radius:99px;border:1px solid rgba(255,255,255,.15);color:rgba(255,255,255,.6)}
+.pill{font-size:10px;padding:4px 10px;border-radius:99px;border:1px solid rgba(255,255,255,.15);color:rgba(255,255,255,.6);white-space:nowrap;cursor:pointer}
 .pill.tor-on{color:#34d399;border-color:rgba(52,211,153,.4)}
-.pill.relay-on{color:var(--acc);border-color:rgba(167,139,250,.5)}
-.tabs{display:flex;gap:4px;padding:8px 12px 0;background:var(--bar);overflow-x:auto}
-.tab{background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.09);border-bottom:0;border-radius:9px 9px 0 0;padding:7px 12px;font-size:12px;cursor:pointer;max-width:190px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;display:flex;gap:6px;align-items:center}
-.tab.on{background:var(--bg);border-color:rgba(167,139,250,.4);color:#c4b5fd}
-.tab .x{opacity:.5;cursor:pointer}.tab .x:hover{opacity:1;color:#f87171}
+.pill.relay-on{color:var(--acc);border-color:var(--acc)}
 #views{flex:1;position:relative}
-webview{position:absolute;inset:0;width:100%;height:100%}
-.home{position:absolute;inset:0;overflow:auto;background:radial-gradient(900px 420px at 50% 8%,rgba(124,92,240,.16),transparent),var(--bg)}
-.home-in{max-width:760px;margin:9vh auto;padding:0 24px;text-align:center}
-.home-in h1{font-weight:200;font-size:58px;letter-spacing:-.03em}
-.home-in h1 i{color:var(--acc);font-style:italic}
-.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin:30px 0}
-.stat{background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.09);border-radius:14px;padding:18px}
-.stat .n{font-size:28px;font-weight:300}.stat .t{font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:rgba(255,255,255,.45);margin-top:4px}
-.setrow{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;margin-top:8px}
-select{background:#000;color:#fff;border:1px solid rgba(255,255,255,.15);border-radius:8px;padding:8px 10px;font-size:12px}
-.drawer{position:absolute;top:0;right:0;bottom:0;width:320px;background:#101016;border-left:1px solid rgba(167,139,250,.3);padding:22px;display:none;z-index:5;overflow:auto}
+webview{position:absolute;inset:0;width:100%;height:100%;background:var(--bg)}
+.home{position:absolute;inset:0;overflow:auto}
+.home-in{max-width:780px;margin:7vh auto;padding:0 24px;text-align:center}
+.home-in img.mark{height:120px}
+.home-in img.word{height:54px;margin-top:14px}
+.omni{display:flex;gap:8px;margin:30px 0 8px}
+.omni input{flex:1;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.15);border-radius:12px;color:#fff;padding:13px 18px;font-size:14px}
+.omni input:focus{outline:none;border-color:var(--acc)}
+.omni button{background:#fff;color:#000;border:0;border-radius:12px;padding:0 26px;font-weight:600;cursor:pointer}
+.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin:22px 0}
+.stat{background:var(--card);border:1px solid rgba(255,255,255,.09);border-radius:14px;padding:16px}
+.stat .n{font-size:24px;font-weight:300}.stat .t{font-size:9px;letter-spacing:.14em;text-transform:uppercase;color:rgba(255,255,255,.45);margin-top:4px}
+.quick{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;margin-top:6px}
+.quick button{background:var(--card);border:1px solid rgba(255,255,255,.1);color:#fff;border-radius:10px;padding:9px 16px;cursor:pointer;font-size:12px}
+.quick button:hover{border-color:var(--acc)}
+.drawer{position:absolute;top:0;right:0;bottom:0;width:330px;background:#101016;border-left:1px solid var(--acc);padding:22px;display:none;z-index:5;overflow:auto}
 .drawer.open{display:block}
-.drawer h3{font-size:13px;letter-spacing:.1em;text-transform:uppercase;color:var(--acc);margin:0 0 12px}
-.drawer .row{display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid rgba(255,255,255,.07);font-size:13px}
+.drawer h3{font-size:12px;letter-spacing:.12em;text-transform:uppercase;color:var(--acc);margin:18px 0 8px}
+.drawer h3:first-child{margin-top:0}
+.drawer .row{display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid rgba(255,255,255,.07);font-size:13px;gap:10px}
 .drawer small{color:rgba(255,255,255,.5);display:block;margin-top:2px;font-size:11px}
+select{background:#000;color:#fff;border:1px solid rgba(255,255,255,.15);border-radius:8px;padding:8px 10px;font-size:12px;max-width:150px}
 .switch{background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.2);color:#fff;border-radius:8px;padding:6px 14px;cursor:pointer}
 .switch.on{background:var(--acc);color:#000;border-color:var(--acc)}
-</style></head><body>
+.swatches{display:flex;gap:8px}
+.sw{width:26px;height:26px;border-radius:50%;cursor:pointer;border:2px solid transparent}
+.sw.on{border-color:#fff}
+input[type=file]{display:none}
+</style></head><body data-theme="purple">
 <div class="tabs" id="tabs"></div>
 <div class="top">
-<span class="logo">W<i>R</i>ATH</span>
-<button class="ibtn" id="back">←</button><button class="ibtn" id="fwd">→</button><button class="ibtn" id="rel">⟳</button><button class="ibtn" id="new">+</button>
+<span class="brand"><img id="brandmark" src="icon.png"></span>
+<button class="ibtn" id="back">←</button><button class="ibtn" id="fwd">→</button><button class="ibtn" id="rel">⟳</button>
 <input id="url" placeholder="search or address">
 <button class="ibtn" id="go">go</button>
-<div class="shield">🛡 <b id="shn">0</b> blocked</div>
-<span class="pill" id="torpill">tor…</span>
-<span class="pill" id="relaypill">relay off</span>
+<div class="shield">🛡 <b id="shn">0</b></div>
+<span class="pill" id="torpill" title="Tor status — click to rescan">tor…</span>
+<span class="pill" id="relaypill" title="Relay node — click to toggle">relay off</span>
 <button class="ibtn" id="setbtn">⚙</button>
 </div>
 <div id="views"><div class="home" id="home"><div class="home-in">
-<h1>WRATH <i>relay</i></h1>
-<p style="color:rgba(255,255,255,.5);font-size:13px">faster than brave. private by architecture. opt-in node.</p>
+<img class="mark" id="homemark" src="icon.png">
+<div><img class="word" id="homeword" src="wordmark.png"></div>
+<div class="omni"><input id="omni" placeholder="search the dark or the light…"><button id="omnigo">⌕</button></div>
 <div class="stats">
-<div class="stat"><div class="n" id="st-track">0</div><div class="t">Trackers Blocked</div></div>
-<div class="stat"><div class="n" id="st-tor">…</div><div class="t">Tor Circuit</div></div>
-<div class="stat"><div class="n" id="st-relay">off</div><div class="t">Relay Node</div></div>
+<div class="stat"><div class="n" id="st-track">0</div><div class="t">Blocked</div></div>
+<div class="stat"><div class="n" id="st-tor">…</div><div class="t">Tor</div></div>
+<div class="stat"><div class="n" id="st-relay">off</div><div class="t">Relay</div></div>
+<div class="stat"><div class="n" id="st-tabs">0</div><div class="t">Tabs</div></div>
 </div>
-<div class="setrow">
-<select id="geo"><option value="off">location: denied</option><option value="nyc">spoof: New York</option><option value="london">spoof: London</option><option value="tokyo">spoof: Tokyo</option><option value="zurich">spoof: Zurich</option></select>
-<button class="ibtn" id="uanew">↻ new identity (UA)</button>
-</div>
+<div class="quick" id="quick"></div>
 </div></div>
 <div class="drawer" id="drawer">
-<h3>Settings</h3>
-<div class="row"><div>Relay node<small>forward opaque blobs, max 100/day. reads nothing.</small></div><button class="switch" id="rsw">off</button></div>
-<div class="row"><div>Rescan Tor<small>re-probe 127.0.0.1:9050</small></div><button class="switch" id="trescan">scan</button></div>
-<div class="row"><div>Geo spoof<small>deny real location always</small></div><select id="geo2"><option value="off">denied</option><option value="nyc">New York</option><option value="london">London</option><option value="tokyo">Tokyo</option><option value="zurich">Zurich</option></select></div>
-<div class="row"><div>Wire spec<small>public WIRE.md — audit the pipe</small></div><button class="switch" id="wiresw">read</button></div>
+<h3>Node</h3>
+<div class="row"><div>Relay node<small>opaque blobs, 100/day max. reads nothing.</small></div><button class="switch" id="rsw">off</button></div>
+<div class="row"><div>Tor circuit<small id="torsub">probing…</small></div><button class="switch" id="trescan">rescan</button></div>
+<h3>Identity</h3>
+<div class="row"><div>Geo spoof<small>real location always denied</small></div><select id="geo"><option value="off">denied</option><option value="nyc">New York</option><option value="london">London</option><option value="tokyo">Tokyo</option><option value="zurich">Zurich</option></select></div>
+<div class="row"><div>User agent<small>fresh per tab</small></div><button class="switch" id="uanew">rotate</button></div>
+<div class="row"><div>Search engine</div><select id="engine"><option value="duck">DuckDuckGo</option><option value="brave">Brave Search</option><option value="google">Google</option></select></div>
+<h3>Look</h3>
+<div class="row"><div>Theme</div><div class="swatches" id="swatches">
+<div class="sw on" data-t="purple" style="background:#a78bfa"></div>
+<div class="sw" data-t="red" style="background:#f87171"></div>
+<div class="sw" data-t="green" style="background:#34d399"></div>
+<div class="sw" data-t="white" style="background:#fff"></div>
+</div></div>
+<div class="row"><div>Wallpaper<small>custom new-tab background</small></div><button class="switch" id="bgbtn">set</button></div>
+<input type="file" id="bgfile" accept="image/*">
+<div class="row"><div>Quick links<small>comma-separated URLs</small></div><button class="switch" id="qbtn">edit</button></div>
+<h3>About</h3>
+<div class="row"><div>Wire spec<small>public — audit the pipe</small></div><button class="switch" id="wiresw">read</button></div>
 </div>
 </div>
 <script>
-let n = 0, cur = null;
+const store = {
+  get(k, d) { try { const v = localStorage.getItem("wrath:" + k); return v === null ? d : JSON.parse(v); } catch (e) { return d; } },
+  set(k, v) { try { localStorage.setItem("wrath:" + k, JSON.stringify(v)); } catch (e) {} },
+};
+let n = 0, cur = null, engine = store.get("engine", "duck");
 const tabs = document.getElementById("tabs"), views = document.getElementById("views"), home = document.getElementById("home");
+const ENG = { duck: (q) => "https://duckduckgo.com/?q=" + encodeURIComponent(q), brave: (q) => "https://search.brave.com/search?q=" + encodeURIComponent(q), google: (q) => "https://www.google.com/search?q=" + encodeURIComponent(q) };
+document.getElementById("engine").value = engine;
 function nav(v, u) {
+  u = (u || "").trim(); if (!u) return;
   if (!/^https?:\/\//.test(u)) {
     if (/^[a-z0-9.-]+\.[a-z]{2,}(\/.*)?$/i.test(u)) u = "https://" + u;
-    else u = "https://duckduckgo.com/?q=" + encodeURIComponent(u);
+    else u = ENG[engine](u);
   }
-  v.src = u; document.getElementById("url").value = u;
+  try { v.src = u; } catch (e) { v.setAttribute("src", u); }
+  document.getElementById("url").value = u;
 }
+function tabsChanged() { document.getElementById("st-tabs").textContent = document.querySelectorAll(".tab[data-t]").length; }
 function addTab(u) {
   n++;
   const v = document.createElement("webview");
@@ -90,65 +127,103 @@ function addTab(u) {
   v.style.display = "none";
   views.appendChild(v);
   const t = document.createElement("div");
-  t.className = "tab";
+  t.className = "tab"; t.setAttribute("data-t", "1");
   t.innerHTML = "<span class='tt'>tab " + n + "</span><span class='x'>✕</span>";
-  t.querySelector(".x").onclick = (e) => { e.stopPropagation(); v.remove(); t.remove(); if (cur === v) { home.style.display = "block"; cur = null; } };
+  t.querySelector(".x").onclick = (e) => { e.stopPropagation(); killTab(v, t); };
   t.onclick = () => show(v, t);
   tabs.appendChild(t);
-  v.addEventListener("page-title-updated", (e) => { t.querySelector(".tt").textContent = (e.title || "tab").slice(0, 26); });
+  const nt = document.getElementById("newtabbtn");
+  if (nt) tabs.appendChild(nt);
+  v.addEventListener("page-title-updated", (e) => { t.querySelector(".tt").textContent = (e.title || "tab").slice(0, 24); });
   v.addEventListener("did-navigate", (e) => { if (v === cur) document.getElementById("url").value = e.url; });
-  show(v, t);
+  v.addEventListener("did-fail-load", (e) => { if (v === cur) document.getElementById("url").value = e.validatedURL + " — failed: " + e.errorDescription; });
+  show(v, t); tabsChanged();
   if (u) nav(v, u);
   return v;
 }
+function killTab(v, t) { v.remove(); t.remove(); if (cur === v) { const vs = document.querySelectorAll("webview"); if (vs.length) { const ts = document.querySelectorAll(".tab[data-t]"); show(vs[vs.length-1], ts[ts.length-1]); } else { home.style.display = "block"; cur = null; } } tabsChanged(); }
 function show(v, t) {
   cur = v;
   document.querySelectorAll("webview").forEach((x) => (x.style.display = "none"));
   document.querySelectorAll(".tab").forEach((x) => x.classList.remove("on"));
   v.style.display = "flex"; t.classList.add("on"); home.style.display = "none";
 }
-document.getElementById("new").onclick = () => addTab();
-document.getElementById("go").onclick = () => { const u = document.getElementById("url").value.trim(); if (!u) return; if (!cur) addTab(u); else nav(cur, u); };
+function homeShow() { cur = null; document.querySelectorAll("webview").forEach((x) => (x.style.display = "none")); document.querySelectorAll(".tab").forEach((x) => x.classList.remove("on")); home.style.display = "block"; }
+(function () { const b = document.createElement("div"); b.className = "tab newtab"; b.id = "newtabbtn"; b.textContent = "+"; b.title = "new tab (home)"; b.onclick = homeShow; tabs.appendChild(b); })();
+document.getElementById("go").onclick = () => { const u = document.getElementById("url").value; if (!cur) addTab(u); else nav(cur, u); };
 document.getElementById("url").onkeydown = (e) => { if (e.key === "Enter") document.getElementById("go").click(); };
+document.getElementById("omni").onkeydown = (e) => { if (e.key === "Enter") document.getElementById("omnigo").click(); };
+document.getElementById("omnigo").onclick = () => { const q = document.getElementById("omni").value; if (q) addTab(q); };
 document.getElementById("back").onclick = () => cur && cur.goBack();
 document.getElementById("fwd").onclick = () => cur && cur.goForward();
 document.getElementById("rel").onclick = () => cur && cur.reload();
-document.getElementById("uanew").onclick = async () => { const ua = await window.wrath.pickUA(); alert("identity rotated:\n" + ua + "\napplies to new tabs"); };
+document.getElementById("uanew").onclick = async () => { const ua = await window.wrath.pickUA(); alert("identity rotated:\n" + ua + "\nnew tabs use it"); };
 document.getElementById("setbtn").onclick = () => document.getElementById("drawer").classList.toggle("open");
 document.getElementById("wiresw").onclick = () => addTab("https://github.com/d34lsae0-95r/wrath-relay-browser/blob/main/WIRE.md");
-async function syncGeo(v) {
-  await window.wrath.setGeo(v);
-  document.getElementById("geo").value = v; document.getElementById("geo2").value = v;
+document.getElementById("engine").onchange = (e) => { engine = e.target.value; store.set("engine", engine); };
+// theme
+const th = store.get("theme", "purple");
+document.body.setAttribute("data-theme", th);
+document.querySelectorAll(".sw").forEach((s) => {
+  s.classList.toggle("on", s.getAttribute("data-t") === th);
+  s.onclick = () => { document.body.setAttribute("data-theme", s.getAttribute("data-t")); store.set("theme", s.getAttribute("data-t")); document.querySelectorAll(".sw").forEach((x) => x.classList.remove("on")); s.classList.add("on"); };
+});
+// wallpaper
+const bg = store.get("bg", "");
+if (bg) document.getElementById("home").style.background = "url(" + bg + ") center/cover," + getComputedStyle(document.getElementById("home")).background;
+document.getElementById("bgbtn").onclick = () => document.getElementById("bgfile").click();
+document.getElementById("bgfile").onchange = (e) => {
+  const f = e.target.files[0]; if (!f) return;
+  const r = new FileReader();
+  r.onload = () => { store.set("bg", r.result); document.getElementById("home").style.background = "url(" + r.result + ") center/cover"; };
+  r.readAsDataURL(f);
+};
+// quick links
+function renderQuick() {
+  const q = store.get("quick", ["https://duckduckgo.com", "https://github.com", "https://news.ycombinator.com"]);
+  const box = document.getElementById("quick"); box.innerHTML = "";
+  q.forEach((u) => { const b = document.createElement("button"); b.textContent = u.replace(/^https?:\/\//, "").slice(0, 24); b.onclick = () => addTab(u); box.appendChild(b); });
 }
+document.getElementById("qbtn").onclick = () => {
+  const cur = store.get("quick", []).join(", ");
+  const v = prompt("quick links (comma-separated URLs):", cur);
+  if (v !== null) store.set("quick", v.split(",").map((s) => s.trim()).filter(Boolean).slice(0, 8));
+  renderQuick();
+};
+renderQuick();
+async function syncGeo(v) { await window.wrath.setGeo(v); document.getElementById("geo").value = v; }
 document.getElementById("geo").onchange = (e) => syncGeo(e.target.value);
-document.getElementById("geo2").onchange = (e) => syncGeo(e.target.value);
-async function relayUI() {
-  const h = await window.wrath.health();
-  const rp = document.getElementById("relaypill");
-  rp.textContent = h.relay ? ("relay on · " + (h.used_today || 0) + "/100") : "relay off";
-  rp.classList.toggle("relay-on", !!h.relay);
-  document.getElementById("st-relay").textContent = h.relay ? "on" : "off";
-  const sw = document.getElementById("rsw");
-  sw.textContent = h.relay ? "on" : "off"; sw.classList.toggle("on", !!h.relay);
-  const sc = await window.wrath.shieldCount().catch(() => 0);
-  document.getElementById("shn").textContent = sc;
-  document.getElementById("st-track").textContent = sc;
-}
-document.getElementById("rsw").onclick = async () => {
+(async () => { try { document.getElementById("geo").value = await window.wrath.getGeo(); } catch (e) {} })();
+async function toggleRelay() {
   const h = await window.wrath.health();
   const r = await window.wrath.toggle(!h.relay);
   if (!h.relay && r.relay) alert("relay ON — opaque blobs only, max 100/day. one click off anytime.");
   relayUI();
-};
+}
+document.getElementById("rsw").onclick = toggleRelay;
+document.getElementById("relaypill").onclick = toggleRelay;
 document.getElementById("trescan").onclick = () => window.wrath.torRescan();
+document.getElementById("torpill").onclick = () => window.wrath.torRescan();
 window.wrath.onTor((v) => {
   const p = document.getElementById("torpill");
   p.textContent = v ? "tor live" : "tor off · direct";
   p.classList.toggle("tor-on", !!v);
   document.getElementById("st-tor").textContent = v ? "live" : "direct";
+  document.getElementById("torsub").textContent = v ? "circuit via 127.0.0.1:9050" : "direct connection";
 });
 window.wrath.onShield((x) => { document.getElementById("shn").textContent = x; document.getElementById("st-track").textContent = x; });
-setInterval(relayUI, 5000);
-(async () => { document.getElementById("geo").value = await window.wrath.getGeo(); document.getElementById("geo2").value = document.getElementById("geo").value; })();
-relayUI();
+async function relayUI() {
+  try {
+    const h = await window.wrath.health();
+    if (h.ok === false && h.msg) { document.getElementById("relaypill").textContent = "relay err"; return; }
+    const rp = document.getElementById("relaypill");
+    rp.textContent = h.relay ? ("relay on · " + (h.used_today || 0) + "/100") : "relay off";
+    rp.classList.toggle("relay-on", !!h.relay);
+    document.getElementById("st-relay").textContent = h.relay ? "on" : "off";
+    const sw = document.getElementById("rsw");
+    sw.textContent = h.relay ? "on" : "off"; sw.classList.toggle("on", !!h.relay);
+    try { const sc = await window.wrath.shieldCount(); document.getElementById("shn").textContent = sc; document.getElementById("st-track").textContent = sc; } catch (e) {}
+  } catch (e) { document.getElementById("relaypill").textContent = "relay dead — restart"; }
+}
+setInterval(relayUI, 5000); relayUI();
 </script></body></html>
