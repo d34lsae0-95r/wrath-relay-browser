@@ -26,8 +26,34 @@ function sweep() {
     }
   } catch (e) {}
 }
-function meshAppend(kind, obj) {
+function onionAddr() {
   try {
+    const h = fs.readFileSync(path.join(os.homedir(), ".wrath-onion", "hostname"), "utf8").trim().slice(0, 128);
+    if (/^[a-z2-7]{56}\.onion$/.test(h)) return h;
+  } catch (e) {}
+  return "";
+}
+function announce() {
+  // publish our .onion to the guard so the mesh can re-home through us.
+  // strict shape server-side, hourly rate limit. never blocks anything.
+  try {
+    const onion = onionAddr();
+    if (!onion) return;
+    const base = (process.env.WRATH_GUARD || "").trim();
+    if (!base) return;
+    const body = Buffer.from(JSON.stringify({ onion }));
+    const u = new URL(base.replace(/\/$/, "") + "/api/mesh/announce");
+    const lib = u.protocol === "https:" ? require("https") : http;
+    const req = lib.request({ hostname: u.hostname, port: u.port || (u.protocol === "https:" ? 443 : 80),
+      path: u.pathname, method: "POST",
+      headers: { "Content-Type": "application/json", "Content-Length": body.length }, timeout: 15000 },
+      (res) => { res.resume(); });
+    req.on("error", () => {});
+    req.on("timeout", () => { try { req.destroy(); } catch (e) {} });
+    req.end(body);
+  } catch (e) {}
+}
+function meshAppend(kind, obj) {  try {
     let seq = 0;
     try { for (const _ of fs.readFileSync(MESH, "utf8").split("\n")) if (_.trim()) seq++; } catch (e) {}
     const ev = { seq: seq + 1, t: Math.floor(Date.now() / 1000), kind: String(kind || "").slice(0, 32), obj: obj || {} };
@@ -38,6 +64,8 @@ function meshAppend(kind, obj) {
 function start() {
   sweep();
   setInterval(sweep, 600000);
+  setTimeout(announce, 120000); // after Tor builds the HS descriptor
+  setInterval(announce, 3600000);
   const srv = http.createServer((req, res) => {
     const send = (code, obj) => {
       const b = Buffer.from(JSON.stringify(obj));
@@ -48,7 +76,7 @@ function start() {
     if (req.method === "GET" && u.pathname === "/health") {
       let drops = 0;
       try { drops = fs.readdirSync(DROP).filter((x) => x.endsWith(".json")).length; } catch (e) {}
-      return send(200, { ok: true, panel: "fallback", drops });
+      return send(200, { ok: true, panel: "fallback", drops, onion: onionAddr() || null });
     }
     if (req.method === "POST" && u.pathname.startsWith("/r/")) {
       let body = Buffer.alloc(0);
@@ -69,8 +97,9 @@ function start() {
       return;
     }
     if (req.method === "GET" && u.pathname === "/api/mesh/pull") {
-      // gossip sync: peers pull our mesh lines (unsigned local cache —
-      // guards re-sign on merge; this node never forges authority)
+      // gossip sync: peers pull our mesh lines. Unsigned local cache —
+      // guards re-sign on merge via /api/mesh/merge; this node never
+      // forges authority, only holds what it saw.
       try {
         const since = parseInt(u.searchParams.get("since") || "0", 10) || 0;
         const lines = fs.readFileSync(MESH, "utf8").split("\n").filter(Boolean);
