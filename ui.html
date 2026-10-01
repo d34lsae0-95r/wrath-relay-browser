@@ -45,7 +45,7 @@ webview{position:absolute;inset:0;width:100%;height:100%;background:var(--bg)}
 .omni:focus-within{border-color:var(--acc)}
 .omni input{flex:1;background:transparent;border:0;color:#fff;font-size:15px;outline:none}
 .omni button{background:#fff;color:#000;border:0;border-radius:999px;padding:10px 24px;font-weight:600;cursor:pointer;font-size:14px}
-.cards{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin:26px 0}
+.cards{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin:26px 0}
 .card{background:rgba(255,255,255,.03);border:1px solid var(--line);border-radius:16px;padding:18px;text-align:left}
 .card .n{font-size:26px;font-weight:200}.card .t{font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:rgba(255,255,255,.42);margin-top:4px}
 .card .sub{font-size:11px;color:rgba(255,255,255,.5);margin-top:8px}
@@ -113,6 +113,7 @@ input[type=file]{display:none}
 <div class="omni"><input id="omni" placeholder="Search privately…"><button id="omnigo">→</button></div>
 <div class="cards">
 <div class="card"><div class="n" id="st-track">0</div><div class="t">Blocked</div><div class="sub" id="st-tor2">trackers + ads</div></div>
+<div class="card"><div class="n" id="st-vault">0</div><div class="t">Vault</div><div class="sub"><a href="#" id="vaultopen" style="color:var(--acc)">ML-KEM-768 sealed</a></div></div>
 <div class="card"><div class="n" id="st-tor">…</div><div class="t">Tor</div><div class="sub" id="torsub2">probing…</div></div>
 <div class="card"><div class="n" id="st-relay">off</div><div class="t">Relay</div><div class="sub"><a href="#" id="relaylearn" style="color:var(--acc)">what's this?</a></div></div>
 </div>
@@ -162,12 +163,13 @@ function nav(v, u) {
 function openPage(which) {
   hideWebviews();
   let pg = document.getElementById("page-" + which);
-  if (pg) { pg.style.display = "block"; if (which === "history") renderHist(pg); if (which === "shields") renderLog(pg); return; }
+  if (pg) { pg.style.display = "block"; if (which === "history") renderHist(pg); if (which === "shields") renderLog(pg); if (which === "vault") renderVault(pg); return; }
   pg = document.createElement("div");
   pg.className = "page"; pg.id = "page-" + which;
   views.appendChild(pg);
   if (which === "history") renderHist(pg);
   if (which === "shields") renderLog(pg);
+  if (which === "vault") renderVault(pg);
 }
 function hideWebviews() { document.querySelectorAll("webview").forEach((x) => (x.style.display = "none")); document.querySelectorAll(".page").forEach((x) => (x.style.display = "none")); document.querySelectorAll(".tab").forEach((x) => x.classList.remove("on")); }
 async function renderHist(pg) {
@@ -195,12 +197,27 @@ async function renderLog(pg) {
     box.appendChild(d);
   });
 }
+async function renderVault(pg) {
+  const n = await window.wrath.vaultCount().catch(() => 0);
+  pg.innerHTML = "<div class='hist'><h2>Vault — " + n + " sealed entries</h2>"
+    + "<div style='font-size:12px;color:rgba(255,255,255,.5);margin-bottom:12px'>ML-KEM-768 wrapped. Export carries sealed envelopes only — decap needs this box.</div>"
+    + "<div style='display:flex;gap:8px;margin-bottom:12px'><button class='ibtn' id='vexp'>export sealed</button><button class='ibtn' id='vwipe'>wipe</button></div>"
+    + "<div id='vl' style='font-size:12px;color:rgba(255,255,255,.55)'></div></div>";
+  pg.querySelector("#vexp").onclick = async () => {
+    const raw = await window.wrath.vaultExport().catch(() => "");
+    const lines = (raw || "").split("\n").filter(Boolean);
+    pg.querySelector("#vl").textContent = lines.length + " envelopes ready — copy from export below. First envelope: " + (lines[0] || "none").slice(0, 80) + "…";
+    try { await navigator.clipboard.writeText(raw); } catch (e) {}
+  };
+  pg.querySelector("#vwipe").onclick = async () => { if (confirm("wipe local vault?")) { await window.wrath.vaultWipe(); renderVault(pg); vaultUI(); } };
+}
 function tabsChanged() {}
 function addTab(u) {
   n++; closePages();
   const v = document.createElement("webview");
   v.setAttribute("partition", "persist:wrath");
   v.setAttribute("allowpopups", "");
+  v.setAttribute("preload", "capture.js");
   v.style.display = "none";
   views.appendChild(v);
   const t = document.createElement("div");
@@ -351,6 +368,7 @@ async function toggleRelay() {
   if (!h.relay && r.relay) alert("relay ON — opaque blobs only, max 100/day. one click off anytime.");
   relayUI();
 }
+document.getElementById("vaultopen").onclick = (e) => { e.preventDefault(); openPage("vault"); };
 document.getElementById("relaylearn").onclick = (e) => { e.preventDefault(); addTab("https://github.com/d34lsae0-95r/wrath-relay-browser/blob/main/WIRE.md"); };
 document.getElementById("uanew").onclick = async () => { await window.wrath.pickUA(); alert("identity rotated — new tabs use it"); };
 window.wrath.onTor((v) => {
@@ -375,5 +393,10 @@ async function relayUI() {
     try { const sc = await window.wrath.shieldCount(); document.getElementById("shn").textContent = sc; document.getElementById("st-track").textContent = sc; } catch (e) {}
   } catch (e) {}
 }
+async function vaultUI() {
+  try { document.getElementById("st-vault").textContent = await window.wrath.vaultCount().catch(() => 0); } catch (e) {}
+}
+window.wrath.onVault(() => vaultUI());
+vaultUI();
 setInterval(relayUI, 5000); relayUI();
 </script></body></html>
