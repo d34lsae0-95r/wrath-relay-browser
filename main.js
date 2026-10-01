@@ -44,11 +44,15 @@ function bootTor() {
     const exe = path.join(base, "tor.exe");
     if (!fs.existsSync(exe)) { console.log("tor sidecar missing at " + exe); return; }
     const dat = path.join(os.homedir(), ".wrath-tor");
+    const hsdir = path.join(os.homedir(), ".wrath-onion");
     try { fs.mkdirSync(dat, { recursive: true }); } catch (e) {}
+    try { fs.mkdirSync(hsdir, { recursive: true }); } catch (e) {}
     torProc = spawn(exe, ["--SocksPort", "127.0.0.1:" + TOR_PORT,
       "--DataDirectory", dat,
       "--GeoIPFile", path.join(base, "geoip"),
-      "--GeoIPv6File", path.join(base, "geoip6")],
+      "--GeoIPv6File", path.join(base, "geoip6"),
+      "--HiddenServiceDir", hsdir,
+      "--HiddenServicePort", "80 127.0.0.1:18973"],
       { stdio: "ignore", windowsHide: true });
     torProc.on("error", () => { torProc = null; });
     try { torProc.unref(); } catch (e) {}
@@ -113,6 +117,13 @@ async function boot() {
   ipcMain.handle("set-geo", (_, m) => { geoMode = GEOS[m] !== undefined ? m : "off"; return geoMode; });
   ipcMain.handle("get-geo", () => geoMode);
   ipcMain.handle("tor-rescan", async () => { torProbe(setTor); return true; });
+  ipcMain.handle("onion-get", () => {
+    try {
+      const h = fs.readFileSync(path.join(os.homedir(), ".wrath-onion", "hostname"), "utf8").trim().slice(0, 128);
+      if (/\.onion$/.test(h)) return h;
+    } catch (e) {}
+    return "";
+  });
   ipcMain.handle("site-get", (_, host) => sitePrefs[String(host || "").replace(/^www\./, "")] || { ads: true, fp: true });
   ipcMain.handle("site-set", (_, host, k, v) => {
     host = String(host || "").replace(/^www\./, "");
