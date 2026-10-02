@@ -135,6 +135,7 @@ input[type=file]{display:none}
 <input type="file" id="bgfile" accept="image/*">
 <div class="row"><div>Quick links</div><button class="switch" id="qbtn">edit</button></div>
 <h3>Network</h3>
+<div class="row"><div>Guard<small id="guardcur">bootstrap default</small></div><button class="switch" id="guardbtn">set</button></div>
 <div class="row"><div>Shield log</div><button class="switch" id="logsw">open</button></div>
 <div class="row"><div>Wire spec<small>public — audit the pipe</small></div><button class="switch" id="wiresw">read</button></div>
 </div>
@@ -350,6 +351,15 @@ document.getElementById("zin").onclick = () => { zoom = Math.min(3, zoom + 0.1);
 document.getElementById("zout").onclick = () => { zoom = Math.max(0.3, zoom - 0.1); applyZoom(); };
 function applyZoom() { document.getElementById("zv").textContent = Math.round(zoom * 100) + "%"; document.querySelectorAll("webview").forEach((v) => { try { v.setZoomFactor(zoom); } catch (e) {} }); }
 document.getElementById("wiresw").onclick = () => addTab("https://github.com/d34lsae0-95r/wrath-relay-browser/blob/main/WIRE.md");
+document.getElementById("guardbtn").onclick = async () => {
+  const cur = await window.wrath.guardGet().catch(() => ({ guard: "" }));
+  const v = prompt("guard address (http(s)://host or xxx.onion):", (cur && cur.guard) || "");
+  if (v !== null && v.trim()) {
+    const r = await window.wrath.guardSet(v.trim());
+    document.getElementById("guardcur").textContent = (r && r.guard) || "not set";
+  }
+};
+(async () => { try { const g = await window.wrath.guardGet(); if (g && g.guard) document.getElementById("guardcur").textContent = g.guard; } catch (e) {} })();
 document.getElementById("logsw").onclick = () => { document.getElementById("drawer").classList.remove("open"); openPage("shields"); };
 document.getElementById("engine").onchange = (e) => { engine = e.target.value; store.set("engine", engine); };
 const th = store.get("theme", "purple");
