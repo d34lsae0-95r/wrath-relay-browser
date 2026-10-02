@@ -47,8 +47,10 @@ function bootTor() {
     const hsdir = path.join(os.homedir(), ".wrath-onion");
     try { fs.mkdirSync(dat, { recursive: true }); } catch (e) {}
     try { fs.mkdirSync(hsdir, { recursive: true }); } catch (e) {}
+    const torlog = path.join(dat, "tor.log");
     torProc = spawn(exe, ["--SocksPort", "127.0.0.1:" + TOR_PORT,
       "--DataDirectory", dat,
+      "--Log", "notice file " + torlog,
       "--GeoIPFile", path.join(base, "geoip"),
       "--GeoIPv6File", path.join(base, "geoip6"),
       "--HiddenServiceDir", hsdir,
@@ -118,6 +120,26 @@ async function boot() {
   ipcMain.handle("set-geo", (_, m) => { geoMode = GEOS[m] !== undefined ? m : "off"; return geoMode; });
   ipcMain.handle("get-geo", () => geoMode);
   ipcMain.handle("tor-rescan", async () => { torProbe(setTor); return true; });
+  ipcMain.handle("tor-log", async () => {
+    // last 30 lines of sidecar bootstrap log + port/HS state. Never throws.
+    try {
+      const lp = path.join(os.homedir(), ".wrath-tor", "tor.log");
+      const lines = fs.readFileSync(lp, "utf8").split("\n").filter(Boolean).slice(-30);
+      let onion = "";
+      try { onion = fs.readFileSync(path.join(os.homedir(), ".wrath-onion", "hostname"), "utf8").trim().slice(0, 128); } catch (e) {}
+      let socks = false;
+      try {
+        const net = require("net");
+        const s = net.connect(TOR_PORT, "127.0.0.1");
+        socks = await new Promise((res) => {
+          s.on("connect", () => { try { s.end(); } catch (e) {} res(true); });
+          s.on("error", () => res(false));
+          setTimeout(() => { try { s.destroy(); } catch (e) {} res(false); }, 3000);
+        });
+      } catch (e) { socks = false; }
+      return { log: lines, onion: (/\.onion$/.test(onion) ? onion : ""), socks, port: TOR_PORT };
+    } catch (e) { return { log: ["no tor.log yet — sidecar may not have started"], onion: "", socks: false, port: TOR_PORT }; }
+  });
   ipcMain.handle("onion-get", () => {
     try {
       const h = fs.readFileSync(path.join(os.homedir(), ".wrath-onion", "hostname"), "utf8").trim().slice(0, 128);
