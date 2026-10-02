@@ -27,14 +27,26 @@ function count() {
 function bump() {
   try { fs.writeFileSync(COUNT, JSON.stringify({ day: today(), n: count() + 1 })); } catch (e) {}
 }
-function guardAddr() {
-  if (!relayOn) return "";
-  try { if (fs.existsSync(HALT)) return ""; } catch (e) {}
+// Bootstrap guard: the fleet's guard onion goes here at release time.
+// Overridable via WRATH_GUARD env or ~/.wrath-relay/guard.json, or the
+// in-app Network settings row. Without any guard the relay holds (no
+// silent direct leaks) — set one to join the mesh.
+const DEFAULT_GUARD = "http://63.250.44.213:8080";
+function guardBase() {
   let base = (process.env.WRATH_GUARD || "").trim();
   if (!base) {
     try { base = String(JSON.parse(fs.readFileSync(path.join(DIR, "guard.json"), "utf8")).guard || "").trim(); } catch (e) {}
   }
+  if (!base) base = DEFAULT_GUARD;
+  return base;
+}
+function guardAddr() {
+  if (!relayOn) return "";
+  try { if (fs.existsSync(HALT)) return ""; } catch (e) {}
+  const base = guardBase();
   if (!base) return "";
+  // hourly rotation: HMAC(hour) picks path suffix, guard resolves.
+  // edge cannot enumerate — one address per request window.
   const hr = String(Math.floor(Date.now() / 3600000));
   const suf = crypto.createHmac("sha256", "wrath-relay").update(hr).digest("hex").slice(0, 8);
   return base.replace(/\/$/, "") + "/r/" + suf;
@@ -79,6 +91,25 @@ const srv = http.createServer(async (req, res) => {
       try { fs.writeFileSync(HALT, "halt"); } catch (e) {}
       relayOn = false;
       return send(200, { relay: false });
+    }
+    if (req.method === "GET" && req.url === "/relay/guard") {
+      return send(200, { guard: guardBase() });
+    }
+    if (req.method === "POST" && req.url === "/relay/guard") {
+      try {
+        const q = JSON.parse(body.toString() || "{}");
+        const g = String(q.guard || "").trim().slice(0, 200);
+        if (!/^https?:\/\/[A-Za-z0-9.\-:]{4,120}$/.test(g) && !/^[a-z2-7]{56}\.onion$/.test(g.replace(/^https?:\/\//, "").split(":")[0])) {
+          // onion guard without scheme gets http://
+          if (/^[a-z2-7]{56}\.onion(:\d+)?$/.test(g)) {
+            fs.writeFileSync(path.join(DIR, "guard.json"), JSON.stringify({ guard: "http://" + g }));
+            return send(200, { guard: "http://" + g });
+          }
+          return send(429, { ok: false, msg: "shape" });
+        }
+        fs.writeFileSync(path.join(DIR, "guard.json"), JSON.stringify({ guard: g }));
+        return send(200, { guard: g });
+      } catch (e) { return send(429, { ok: false, msg: "err" }); }
     }
     if (req.method === "POST" && req.url === "/relay/send") {
       let env;
