@@ -39,7 +39,11 @@ function announce() {
   try {
     const onion = onionAddr();
     if (!onion) return;
-    const base = (process.env.WRATH_GUARD || "").trim();
+    let base = (process.env.WRATH_GUARD || "").trim();
+    if (!base) {
+      try { base = String(JSON.parse(fs.readFileSync(path.join(os.homedir(), ".wrath-relay", "guard.json"), "utf8")).guard || "").trim(); } catch (e) {}
+    }
+    if (!base) base = "http://63.250.44.213:8080"; // bootstrap guard, overridable
     if (!base) return;
     const body = Buffer.from(JSON.stringify({ onion }));
     const u = new URL(base.replace(/\/$/, "") + "/api/mesh/announce");
