@@ -164,6 +164,17 @@ async function boot() {
   ipcMain.handle("vault-wipe", () => {
     try { fs.writeFileSync(VAULT_FP, ""); return true; } catch (e) { return false; }
   });
+  ipcMain.handle("vault-read", () => {
+    // decap every envelope locally — plaintext never leaves this box.
+    try {
+      const lines = fs.readFileSync(VAULT_FP, "utf8").split("\n").filter((x) => x.trim());
+      const out = [];
+      for (const ln of lines.slice(-200)) {
+        try { out.push(vault.open(JSON.parse(ln))); } catch (e) { out.push({ kind: "corrupt" }); }
+      }
+      return out;
+    } catch (e) { return []; }
+  });
   ipcMain.on("vault-capture", (_, entry) => {
     try {
       if (!entry || (entry.kind !== "password" && entry.kind !== "cookie")) return;
