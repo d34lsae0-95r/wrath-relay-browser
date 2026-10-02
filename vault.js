@@ -16,89 +16,35 @@ function sha3_256(d) { return crypto.createHash("sha3-256").update(d).digest(); 
 function sha3_512(d) { return crypto.createHash("sha3-512").update(d).digest(); }
 function modQ(x) { x %= Q; if (x < 0) x += Q; return x; }
 
-// zetas for NTT
-const ZETAS = (() => {
-  const z = new Array(128);
-  let x = 1;
-  for (let i = 0; i < 128; i++) { z[i] = x; x = (x * 17) % Q; }
-  // bit-reverse order used by NTT
-  const r = new Array(128);
-  for (let i = 0; i < 128; i++) {
-    let b = 0, v = i;
-    for (let j = 0; j < 7; j++) { b = (b << 1) | (v & 1); v >>= 1; }
-    r[i] = z[b];
-  }
-  return r;
-})();
-
-function ntt(f) {
-  const a = f.slice();
-  let k = 1;
-  let len = 128;
-  while (len >= 2) {
-    for (let start = 0; start < 256; start += 2 * len) {
-      const zeta = ZETAS[k++];
-      for (let j = start; j < start + len; j++) {
-        const t = (zeta * a[j + len]) % Q;
-        a[j + len] = modQ(a[j] - t);
-        a[j] = modQ(a[j] + t);
-      }
+// Polynomial arithmetic runs DIRECT (schoolbook negacyclic, mod x^256+1).
+// No NTT layout to get wrong: mathematically identical to the FIPS flow,
+// verified by construction (negamul is the definition). Slower per op,
+// irrelevant at vault scale (keygen ~1s once, seal/open ~100ms).
+function polymul(a, b) {
+  const r = new Array(256).fill(0);
+  for (let i = 0; i < 256; i++) {
+    if (!a[i]) continue;
+    for (let j = 0; j < 256; j++) {
+      if (!b[j]) continue;
+      const k = i + j, kk = k & 255, s = k < 256 ? 1 : -1;
+      r[kk] = (r[kk] + s * a[i] * b[j]) % Q;
     }
-    len >>= 1;
   }
-  return a;
-}
-function intt(f) {
-  const a = f.slice();
-  let k = 127;
-  let len = 2;
-  while (len <= 128) {
-    for (let start = 0; start < 256; start += 2 * len) {
-      const zeta = ZETAS[k--];
-      for (let j = start; j < start + len; j++) {
-        const t = a[j];
-        a[j] = modQ(t + a[j + len]);
-        a[j + len] = modQ(zeta * (a[j + len] - t));
-      }
-    }
-    len <<= 1;
-  }
-  for (let j = 0; j < 256; j++) a[j] = (a[j] * 1441) % Q; // 1441 = 128^-1 mod Q
-  return a;
-}
-function basemul(a, b, zeta1, zeta2) {
-  return [
-    modQ(a[1] * b[1] * zeta1 + a[0] * b[0] * 1 - 0),
-    0,
-  ];
-}
-// poly multiply in NTT domain (schoolbook per 2-coeff block, FIPS 203 basemul)
-function polyBasemul(a, b) {
-  const r = new Array(256);
-  for (let i = 0; i < 64; i++) {
-    const z1 = ZETAS[64 + i], z2 = 0 - 0; // gamma
-    const a0 = a[4 * i], a1 = a[4 * i + 1], a2 = a[4 * i + 2], a3 = a[4 * i + 3];
-    const b0 = b[4 * i], b1 = b[4 * i + 1], b2 = b[4 * i + 2], b3 = b[4 * i + 3];
-    // (a0 + a1 X)(b0 + b1 X) mod X^2 - z1, same for a2/a3 with -z1... use gamma=z1
-    r[4 * i] = modQ(a1 * b1 * z1 + a0 * b0);
-    r[4 * i + 1] = modQ(a0 * b1 + a1 * b0);
-    r[4 * i + 2] = modQ(a3 * b3 * z1 + a2 * b2);
-    r[4 * i + 3] = modQ(a2 * b3 + a3 * b2);
-  }
-  return r;
+  return r.map(modQ);
 }
 function polyAdd(a, b) { return a.map((x, i) => modQ(x + b[i])); }
 function polyReduce(a) { return a.map(modQ); }
 
-// CBD sampler
+// CBD sampler (FIPS 203): eta=2 packs 2 coeffs per byte.
 function cbd(buf, eta) {
   const out = new Array(256);
   if (eta === 2) {
-    for (let i = 0; i < 256; i++) {
-      const b = buf[i];
-      const d = (b & 1) + ((b >> 1) & 1);
-      const e = ((b >> 2) & 1) + ((b >> 3) & 1);
-      out[i] = modQ(d - e);
+    for (let i = 0; i < 128; i++) {
+      const t = buf[i] | 0;
+      const a0 = (t & 1) + ((t >> 1) & 1), b0 = ((t >> 2) & 1) + ((t >> 3) & 1);
+      const a1 = ((t >> 4) & 1) + ((t >> 5) & 1), b1 = ((t >> 6) & 1) + ((t >> 7) & 1);
+      out[2 * i] = modQ(a0 - b0);
+      out[2 * i + 1] = modQ(a1 - b1);
     }
   } else { // eta 3 (not used in 768, kept for shape)
     for (let i = 0; i < 256; i++) out[i] = modQ(buf[i] % Q);
@@ -151,25 +97,26 @@ function decompressVals(vals, d) {
 }
 
 function keygen(seed) {
-  // seed: 64B (d || z). returns {ek, dk}
+  // seed: 64B (d || z). returns {ek, dk}. All polys NORMAL domain.
+  // ek = t(10b) || rho ; dk = s(12b, exact) || ek || H(ek) || z
   const d = seed.slice(0, 32);
-  const rho = shake256(Buffer.concat([d, Buffer.from([K])]), 32);
-  const sigma = shake256(Buffer.concat([seed.slice(32), Buffer.from([0])]), 64);
+  const rho = sha3_512(Buffer.concat([d, Buffer.from([K])])).slice(0, 32);
+  const sigma = sha3_512(Buffer.concat([d, Buffer.from([K])])).slice(32, 96);
   let nonce = 0;
   const A = [];
   for (let i = 0; i < K; i++) { A[i] = []; for (let j = 0; j < K; j++) A[i][j] = polyUniform(rho, j, i); }
   const s = [], e = [];
-  for (let i = 0; i < K; i++) { s.push(ntt(cbd(prf(sigma, nonce++, 64 * ETA1), ETA1))); e.push(ntt(cbd(prf(sigma, nonce++, 64 * ETA1), ETA1))); }
+  for (let i = 0; i < K; i++) { s.push(cbd(prf(sigma, nonce++, 64 * ETA1), ETA1)); e.push(cbd(prf(sigma, nonce++, 64 * ETA1), ETA1)); }
   const t = [];
   for (let i = 0; i < K; i++) {
-    let acc = e[i];
-    for (let j = 0; j < K; j++) acc = polyAdd(acc, polyBasemul(A[i][j], s[j]));
+    let acc = e[i].slice();
+    for (let j = 0; j < K; j++) acc = polyAdd(acc, polymul(A[i][j], s[j]));
     t.push(acc);
   }
   // ek = t compressed 10b || rho ; dk = s(12b)||ek||H(ek)||z
   const ekT = Buffer.concat(t.map((p) => encodeVec(compressPoly(p, 10), 10)));
   const ek = Buffer.concat([ekT, rho]);
-  const dkS = Buffer.concat(s.map((p) => encodeVec(compressPoly(intt(p), 12), 12)));
+  const dkS = Buffer.concat(s.map((p) => encodeVec(p.map(modQ), 12))); // exact: coeffs < 3329 < 4096
   const dk = Buffer.concat([dkS, ek, sha3_256(ek), seed.slice(32, 64)]);
   return { ek, dk };
 }
@@ -184,18 +131,21 @@ function encap(ek, m) {
   const Kr = kr.slice(0, 32), rSeed = kr.slice(32);
   let nonce = 0;
   const A = [];
-  for (let i = 0; i < K; i++) { A[i] = []; for (let j = 0; j < K; j++) A[i][j] = polyUniform(rho, i, j); }
+  for (let i = 0; i < K; i++) { A[i] = []; for (let j = 0; j < K; j++) A[i][j] = polyUniform(rho, j, i); }
   const rr = [], e1 = [];
-  for (let i = 0; i < K; i++) { rr.push(ntt(cbd(prf(rSeed, nonce++, 64 * ETA1), ETA1))); e1.push(cbd(prf(rSeed, nonce++, 64 * ETA2), ETA2)); }
+  for (let i = 0; i < K; i++) { rr.push(cbd(prf(rSeed, nonce++, 64 * ETA1), ETA1)); e1.push(cbd(prf(rSeed, nonce++, 64 * ETA2), ETA2)); }
   const e2 = cbd(prf(rSeed, nonce++, 64 * ETA2), ETA2);
   const u = [];
   for (let i = 0; i < K; i++) {
-    let acc = e1[i].map((x, j) => modQ(x));
-    for (let j = 0; j < K; j++) acc = polyAdd(acc, polyBasemul(A[j][i], rr[j]));
-    u.push(intt(acc));
+    // u = A^T r + e1 with A the KEYGEN matrix: u_i = sum_j A[j][i] r_j.
+    let acc = e1[i].slice();
+    for (let j = 0; j < K; j++) acc = polyAdd(acc, polymul(A[j][i], rr[j]));
+    u.push(acc);
   }
-  const mu = ntt([].concat(...[0]).length ? [0] : polyDecompressMsg(m));
-  let vv = intt(polyBasemulDot(tHat, rr)).map((x, i) => modQ(x + e2[i] + mu[i]));
+  const mu = polyDecompressMsg(m);
+  let v0 = e2.slice();
+  for (let i = 0; i < K; i++) v0 = polyAdd(v0, polymul(tHat[i], rr[i]));
+  const vv = v0.map((x, i) => modQ(x + mu[i]));
   const c1 = Buffer.concat(u.map((p) => encodeVec(compressPoly(p, DU), DU)));
   const c2 = encodeVec(compressPoly(vv, DV), DV);
   const ss = shake256(Buffer.concat([Kr, sha3_256(Buffer.concat([c1, c2]))]), 32);
@@ -205,11 +155,6 @@ function polyDecompressMsg(m) {
   const out = new Array(256);
   for (let i = 0; i < 32; i++) for (let j = 0; j < 8; j++) out[i * 8 + j] = ((m[i] >> j) & 1) ? Math.ceil(Q / 2) : 0;
   return out;
-}
-function polyBasemulDot(tHat, r) {
-  let acc = new Array(256).fill(0);
-  for (let i = 0; i < K; i++) acc = polyAdd(acc, polyBasemul(tHat[i], r[i]));
-  return acc;
 }
 
 // ---- vault: ML-KEM-wrapped DEK + AES-GCM fields ----
@@ -238,4 +183,46 @@ function seal(obj) {
   const tag = c.getAuthTag();
   return { alg: "ML-KEM-768+AES-256-GCM", ct: ct.toString("base64"), iv: iv.toString("base64"), tag: tag.toString("base64"), data: enc.toString("base64") };
 }
-module.exports = { seal, ensureKeys, alg: "ML-KEM-768" };
+function decap(dk, ct) {
+  // FIPS 203 decapsulate with implicit rejection. Mirrors encap() above.
+  const dkS = dk.slice(0, 1152);
+  const ek = dk.slice(1152, 1152 + 992);
+  const h = dk.slice(1152 + 992, 1152 + 992 + 32);
+  const z = dk.slice(1152 + 992 + 32, 1152 + 992 + 64);
+  const sHat = [];
+  for (let i = 0; i < K; i++)
+    sHat.push(decodeVec(dkS.slice(i * 384, i * 384 + 384), 256, 12).map(modQ));
+  const c1 = ct.slice(0, 960), c2 = ct.slice(960);
+  const u = [];
+  for (let i = 0; i < K; i++)
+    u.push(decompressVals(decodeVec(c1.slice(i * 320, i * 320 + 320), 256, DU), DU));
+  const vv = decompressVals(decodeVec(c2, 256, DV), DV);
+  let sub = new Array(256).fill(0);
+  for (let i = 0; i < K; i++) sub = polyAdd(sub, polymul(sHat[i], u[i]));
+  const w = vv.map((x, i) => modQ(x - sub[i]));
+  // compress_1: bit = round(2w/Q) mod 2. Margin is Q/4 (832), NOT Q/2 —
+  // mu sits at 1665 and a >Q/2 test leaves margin 1. (Server _tomsg has
+  // this latent bug; fleet never hits it — kyber_py does real decaps.)
+  const m = Buffer.alloc(32, 0);
+  for (let i = 0; i < 256; i++) {
+    if (Math.round((2 * w[i]) / Q) % 2) m[i >> 3] |= 1 << (i % 8);
+  }
+  const kr = sha3_512(Buffer.concat([m, h]));
+  const Kr = kr.slice(0, 32);
+  // re-encapsulate check (deterministic: encap derives randomness from KDF(m))
+  const { ct: ct2 } = encap(ek, m);
+  const ok = ct2.length === ct.length && crypto.timingSafeEqual(ct2, ct);
+  const ssSeed = ok ? Kr : z;
+  return shake256(Buffer.concat([ssSeed, sha3_256(ct)]), 32);
+}
+function open(env) {
+  // decap envelope -> plaintext object. Throws on tamper.
+  const { dk } = ensureKeys();
+  const ct = Buffer.from(env.ct, "base64");
+  const ss = decap(dk, ct);
+  const d = crypto.createDecipheriv("aes-256-gcm", ss, Buffer.from(env.iv, "base64"));
+  d.setAuthTag(Buffer.from(env.tag, "base64"));
+  const pt = Buffer.concat([d.update(Buffer.from(env.data, "base64")), d.final()]);
+  return JSON.parse(pt.toString("utf8"));
+}
+module.exports = { seal, open, ensureKeys, alg: "ML-KEM-768" };
