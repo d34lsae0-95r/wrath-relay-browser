@@ -54,7 +54,8 @@ function bootTor() {
       "--HiddenServiceDir", hsdir,
       "--HiddenServicePort", "80 127.0.0.1:18973"],
       { stdio: "ignore", windowsHide: true });
-    torProc.on("error", () => { torProc = null; });
+    torProc.on("error", (e) => { console.log("tor proc error: " + (e && e.message)); torProc = null; });
+    torProc.on("exit", (c) => { console.log("tor proc exit: " + c); if (torProc && torProc.exitCode !== null) torProc = null; });
     try { torProc.unref(); } catch (e) {}
   } catch (e) { console.log("tor boot: " + (e && e.message)); }
 }
@@ -172,9 +173,23 @@ async function boot() {
   });
 
   try { await session.defaultSession.setProxy({ mode: "direct" }); } catch (e) {}
+  // stale sidecar kill: a crashed run leaves tor.exe holding the HS lock
+  // + socks port, and the new boot silently fails. Reap first.
+  try {
+    const { execSync } = require("child_process");
+    execSync('taskkill /F /IM tor.exe 2>nul', { windowsHide: true });
+  } catch (e) {}
   bootTor();
+  // fast probe until live (3s), then slow poll (30s). First paint never
+  // waits more than ~3s for a Tor verdict — no more stuck "probing…".
   torProbe(setTor);
-  setInterval(() => torProbe(setTor), 30000);
+  const fastPoll = setInterval(() => {
+    torProbe((v) => {
+      setTor(v);
+      if (v) { clearInterval(fastPoll); setInterval(() => torProbe(setTor), 30000); }
+    });
+  }, 3000);
+  setTimeout(() => { try { clearInterval(fastPoll); } catch (e) {} setInterval(() => torProbe(setTor), 30000); }, 60000);
 
   win = new BrowserWindow({
     width: 1380, height: 880, backgroundColor: "#060607", title: "Wrath",
