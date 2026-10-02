@@ -7,6 +7,7 @@ contextBridge.exposeInMainWorld("wrath", {
   setGeo: (m) => ipcRenderer.invoke("set-geo", m),
   getGeo: () => ipcRenderer.invoke("get-geo"),
   torRescan: () => ipcRenderer.invoke("tor-rescan"),
+  torLog: () => ipcRenderer.invoke("tor-log"),
   siteGet: (h) => ipcRenderer.invoke("site-get", h),
   siteSet: (h, k, v) => ipcRenderer.invoke("site-set", h, k, v),
   histGet: () => ipcRenderer.invoke("hist-get"),
