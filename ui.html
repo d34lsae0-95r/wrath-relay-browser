@@ -102,6 +102,7 @@ input[type=file]{display:none}
 <div class="row"><div>Zoom</div><div><button class="switch" id="zout">−</button> <span id="zv" style="font-size:12px">100%</span> <button class="switch" id="zin">+</button></div></div>
 <div class="row"><div>History</div><button class="switch" id="m-hist">open</button></div>
 <div class="row"><div>Tor circuit</div><button class="switch" id="m-tor">rescan</button></div>
+<div class="row"><div>Tor diagnostics<small>bootstrap log + socks state</small></div><button class="switch" id="m-tordiag">open</button></div>
 <div class="row"><div>Relay node <small id="m-relaysub">off</small></div><button class="switch" id="m-relay">off</button></div>
 <div class="row"><div>Settings</div><button class="switch" id="m-set">open</button></div>
 </div>
@@ -164,13 +165,14 @@ function nav(v, u) {
 function openPage(which) {
   hideWebviews();
   let pg = document.getElementById("page-" + which);
-  if (pg) { pg.style.display = "block"; if (which === "history") renderHist(pg); if (which === "shields") renderLog(pg); if (which === "vault") renderVault(pg); return; }
+  if (pg) { pg.style.display = "block"; if (which === "history") renderHist(pg); if (which === "shields") renderLog(pg); if (which === "vault") renderVault(pg); if (which === "tor") renderTor(pg); return; }
   pg = document.createElement("div");
   pg.className = "page"; pg.id = "page-" + which;
   views.appendChild(pg);
   if (which === "history") renderHist(pg);
   if (which === "shields") renderLog(pg);
   if (which === "vault") renderVault(pg);
+  if (which === "tor") renderTor(pg);
 }
 function hideWebviews() { document.querySelectorAll("webview").forEach((x) => (x.style.display = "none")); document.querySelectorAll(".page").forEach((x) => (x.style.display = "none")); document.querySelectorAll(".tab").forEach((x) => x.classList.remove("on")); }
 async function renderHist(pg) {
@@ -197,6 +199,19 @@ async function renderLog(pg) {
     d.querySelector("span").textContent = new Date(e.at).toLocaleTimeString();
     box.appendChild(d);
   });
+}
+async function renderTor(pg) {
+  pg.innerHTML = "<div class='hist'><h2>Tor diagnostics</h2><div id='td' style='font-size:12px'>probing sidecar…</div></div>";
+  const box = pg.querySelector("#td");
+  try {
+    const t = await window.wrath.torLog().catch(() => null);
+    if (!t) { box.textContent = "no data from main process"; return; }
+    let html = "<div class='hrow'><span>socks 127.0.0.1:" + (t.port || 19050) + "</span><span>" + (t.socks ? "OPEN" : "CLOSED") + "</span></div>";
+    html += "<div class='hrow'><span>onion service</span><span>" + (t.onion || "not published yet") + "</span></div>";
+    html += "<div style='margin-top:12px;font-family:monospace;white-space:pre-wrap'>"
+      + ((t.log || []).join("\n") || "empty log").replace(/</g, "&lt;").slice(-3000) + "</div>";
+    box.innerHTML = html;
+  } catch (e) { box.textContent = "failed: " + e.message; }
 }
 async function renderVault(pg) {
   const n = await window.wrath.vaultCount().catch(() => 0);
@@ -339,6 +354,7 @@ document.getElementById("m-new").onclick = () => { document.getElementById("menu
 document.getElementById("m-find").onclick = () => { document.getElementById("menupop").classList.remove("open"); document.getElementById("findbar").classList.add("open"); document.getElementById("findq").focus(); };
 document.getElementById("m-hist").onclick = () => { document.getElementById("menupop").classList.remove("open"); openPage("history"); };
 document.getElementById("m-tor").onclick = () => window.wrath.torRescan();
+document.getElementById("m-tordiag").onclick = () => { document.getElementById("menupop").classList.remove("open"); openPage("tor"); };
 document.getElementById("m-relay").onclick = toggleRelay;
 document.getElementById("m-set").onclick = () => { document.getElementById("menupop").classList.remove("open"); document.getElementById("drawer").classList.toggle("open"); };
 if (store.get("vtabs", false)) { document.body.classList.add("vtabs"); document.getElementById("m-vt").textContent = "on"; }
