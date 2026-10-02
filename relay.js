@@ -31,7 +31,7 @@ function bump() {
 // Overridable via WRATH_GUARD env or ~/.wrath-relay/guard.json, or the
 // in-app Network settings row. Without any guard the relay holds (no
 // silent direct leaks) — set one to join the mesh.
-const DEFAULT_GUARD = "http://63.250.44.213:8080";
+const DEFAULT_GUARD = "http://doef5xgdqcrdxxmvpodjtbt3h7xqkojygwyh2wsovk7rhzdqvdnsxcyd.onion";
 function guardBase() {
   let base = (process.env.WRATH_GUARD || "").trim();
   if (!base) {
@@ -50,6 +50,53 @@ function guardAddr() {
   const hr = String(Math.floor(Date.now() / 3600000));
   const suf = crypto.createHmac("sha256", "wrath-relay").update(hr).digest("hex").slice(0, 8);
   return base.replace(/\/$/, "") + "/r/" + suf;
+}
+function socksPost(url, body) {
+  const bb = Buffer.isBuffer(body) ? body : Buffer.from(String(body || ""), "utf8");
+  return new Promise((resolve) => {
+    try {
+      const net = require("net");
+      const u = new URL(url);
+      const host = u.hostname;
+      const port = parseInt(u.port || "80", 10) || 80;
+      const s = net.connect(19050, "127.0.0.1");
+      let done = false;
+      const fail = () => { if (!done) { done = true; try { s.destroy(); } catch (e) {} resolve(0); } };
+      s.setTimeout(20000, fail);
+      s.on("error", fail);
+      s.on("connect", () => {
+        const hb = Buffer.from(host, "utf8");
+        s.write(Buffer.concat([Buffer.from([0x05, 0x01, 0x00]), Buffer.from([0x05, 0x01, 0x00, 0x03, hb.length]), hb, Buffer.from([(port >> 8) & 255, port & 255])]));
+        let buf = Buffer.alloc(0);
+        const onData = (c) => {
+          buf = Buffer.concat([buf, c]);
+          if (buf.length < 10) return;
+          if (buf[1] !== 0x00) { s.removeListener("data", onData); return fail(); }
+          s.removeListener("data", onData);
+          const path = (u.pathname || "/") + (u.search || "");
+          s.write(Buffer.concat([Buffer.from("POST " + path + " HTTP/1.1\r\nHost: " + host + "\r\nContent-Type: application/json\r\nContent-Length: " + bb.length + "\r\nConnection: close\r\n\r\n"), bb]));
+          let rb = Buffer.alloc(0);
+          const finish = (code) => { if (!done) { done = true; try { s.destroy(); } catch (e) {} resolve(code); } };
+          s.on("data", (d) => {
+            rb = Buffer.concat([rb, d]);
+            // resolve on response head — don't wait for close (Tor holds).
+            try {
+              const hs = rb.toString("utf8");
+              if (hs.indexOf("\r\n\r\n") >= 0 || hs.indexOf("\n\n") >= 0) {
+                finish(parseInt(((hs.split("\r\n")[0] || "").split(" ")[1] || "0"), 10) || 0);
+              }
+            } catch (e) {}
+          });
+          s.on("close", () => {
+            if (done) return;
+            try { finish(parseInt((rb.toString("utf8").split("\r\n")[0] || "").split(" ")[1] || "0", 10) || 0); }
+            catch (e) { finish(0); }
+          });
+        };
+        s.on("data", onData);
+      });
+    } catch (e) { resolve(0); }
+  });
 }
 function post(url, body) {
   return new Promise((resolve) => {
@@ -75,7 +122,7 @@ const srv = http.createServer(async (req, res) => {
   if (req.method === "GET" && (req.url === "/health" || req.url === "/healthz")) {
     let halted = false;
     try { halted = fs.existsSync(HALT); } catch (e) {}
-    return send(200, { ok: true, relay: relayOn && !halted, used_today: count(), max_day: MAX_DAY });
+    return send(200, { ok: true, relay: relayOn && !halted, used_today: count(), max_day: MAX_DAY, guard: guardBase() });
   }
   if (req.socket.remoteAddress !== "127.0.0.1" && req.socket.remoteAddress !== "::1" && req.socket.remoteAddress !== "::ffff:127.0.0.1")
     { res.writeHead(403); return res.end(); }
@@ -121,7 +168,9 @@ const srv = http.createServer(async (req, res) => {
       if (count() >= MAX_DAY) return send(429, { ok: false, msg: "rate" });
       const ga = guardAddr();
       if (!ga) return send(429, { ok: false, msg: "off" });
-      const st = await post(ga, JSON.stringify({ v: 1, to: String(env.to).slice(0, 64), ttl: 86400, blob: String(env.blob).slice(0, 90000) }));
+      const st = /\.onion/i.test(ga)
+        ? await socksPost(ga, JSON.stringify({ v: 1, to: String(env.to).slice(0, 64), ttl: 86400, blob: String(env.blob).slice(0, 90000) }))
+        : await post(ga, JSON.stringify({ v: 1, to: String(env.to).slice(0, 64), ttl: 86400, blob: String(env.blob).slice(0, 90000) }));
       if (st === 200 || st === 202) { bump(); return send(200, { ok: true, msg: "sent" }); }
       return send(429, { ok: false, msg: "guard-" + st });
     }
