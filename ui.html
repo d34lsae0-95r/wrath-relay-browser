@@ -112,8 +112,8 @@ input[type=file]{display:none}
 <div><img class="word" src="wordmark.png"></div>
 <div class="omni"><input id="omni" placeholder="Search privately…"><button id="omnigo">→</button></div>
 <div class="cards">
-<div class="card"><div class="n" id="st-track">0</div><div class="t">Blocked</div><div class="sub" id="st-tor2">trackers + ads</div></div>
-<div class="card"><div class="n" id="st-vault">0</div><div class="t">Vault</div><div class="sub"><a href="#" id="vaultopen" style="color:var(--acc)">ML-KEM-768 sealed</a></div></div>
+<div class="card"><div class="n" id="st-track">0</div><div class="t">Blocked</div><div class="sub" id="st-tor2">browse — blocks land here</div></div>
+<div class="card"><div class="n" id="st-vault">0</div><div class="t">Vault</div><div class="sub"><a href="#" id="vaultopen" style="color:var(--acc)">log in somewhere — seals here</a></div></div>
 <div class="card"><div class="n" id="st-tor">…</div><div class="t">Tor</div><div class="sub" id="torsub2">probing…</div></div>
 <div class="card"><div class="n" id="st-relay">off</div><div class="t">Relay</div><div class="sub"><a href="#" id="relaylearn" style="color:var(--acc)">what's this?</a><span id="onionline" style="display:block;overflow:hidden;text-overflow:ellipsis"></span></div></div>
 </div>
@@ -374,9 +374,9 @@ document.getElementById("uanew").onclick = async () => { await window.wrath.pick
 window.wrath.onTor((v) => {
   const u = document.getElementById("url");
   u.classList.toggle("tor", !!v);
-  u.placeholder = v ? "Tor live — search or enter .onion / address" : "Search or enter address";
-  document.getElementById("st-tor").textContent = v ? "live" : "off";
-  document.getElementById("st-tor2").textContent = v ? "circuit via 127.0.0.1:9050" : "direct connection";
+  u.placeholder = v ? "Tor live — search or enter .onion / address" : "Tor booting… search still works direct";
+  document.getElementById("st-tor").textContent = v ? "live" : "boot";
+  document.getElementById("st-tor2").textContent = v ? "circuit via 127.0.0.1:19050" : "sidecar starting — direct until live";
 });
 window.wrath.onShield((o) => {
   const total = (o && o.total !== undefined) ? o.total : o;
