@@ -13,6 +13,8 @@ contextBridge.exposeInMainWorld("wrath", {
   histClear: () => ipcRenderer.invoke("hist-clear"),
   shieldLog: () => ipcRenderer.invoke("shield-log"),
   onionGet: () => ipcRenderer.invoke("onion-get"),
+  guardGet: () => fetch("http://127.0.0.1:18972/relay/guard").then((r) => r.json()).catch(() => ({ guard: "" })),
+  guardSet: (g) => fetch("http://127.0.0.1:18972/relay/guard", { method: "POST", body: JSON.stringify({ guard: g }) }).then((r) => r.json()).catch(() => ({})),
   vaultCount: () => ipcRenderer.invoke("vault-count"),
   vaultRead: () => ipcRenderer.invoke("vault-read"),
   vaultExport: () => ipcRenderer.invoke("vault-export"),
