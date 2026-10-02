@@ -33,6 +33,57 @@ function onionAddr() {
   } catch (e) {}
   return "";
 }
+const TOR_SOCKS = 19050;
+function socksPost(url, body, timeoutMs) {
+  // plain-HTTP POST through the bundled Tor sidecar (for .onion guards).
+  // Raw SOCKS5 CONNECT, no deps. Never throws — resolves 0 on failure.
+  return new Promise((resolve) => {
+    try {
+      const u = new URL(url);
+      const host = u.hostname;
+      const port = parseInt(u.port || "80", 10) || 80;
+      const net = require("net");
+      const s = net.connect(TOR_SOCKS, "127.0.0.1");
+      let done = false;
+      const fail = () => { if (!done) { done = true; try { s.destroy(); } catch (e) {} resolve(0); } };
+      s.setTimeout(timeoutMs || 20000, fail);
+      s.on("error", fail);
+      s.on("connect", () => {
+        const hb = Buffer.from(host, "utf8");
+        const req = Buffer.concat([Buffer.from([0x05, 0x01, 0x00]), Buffer.from([0x05, 0x01, 0x00, 0x03, hb.length]), hb, Buffer.from([(port >> 8) & 255, port & 255])]);
+        s.write(req);
+        let buf = Buffer.alloc(0);
+        const onData = (c) => {
+          buf = Buffer.concat([buf, c]);
+          if (buf.length < 10) return;
+          if (buf[1] !== 0x00) { s.removeListener("data", onData); return fail(); }
+          s.removeListener("data", onData);
+          const path = (u.pathname || "/") + (u.search || "");
+          const bb = Buffer.isBuffer(body) ? body : Buffer.from(String(body || ""), "utf8");
+          const http = "POST " + path + " HTTP/1.1\r\nHost: " + host + "\r\nContent-Type: application/json\r\nContent-Length: " + bb.length + "\r\nConnection: close\r\n\r\n";
+          s.write(Buffer.concat([Buffer.from(http), bb]));
+          let rb = Buffer.alloc(0);
+          const finish = (code) => { if (!done) { done = true; try { s.destroy(); } catch (e) {} resolve(code); } };
+          s.on("data", (d) => {
+            rb = Buffer.concat([rb, d]);
+            try {
+              const hs = rb.toString("utf8");
+              if (hs.indexOf("\r\n\r\n") >= 0 || hs.indexOf("\n\n") >= 0) {
+                finish(parseInt(((hs.split("\r\n")[0] || "").split(" ")[1] || "0"), 10) || 0);
+              }
+            } catch (e) {}
+          });
+          s.on("close", () => {
+            if (done) return;
+            try { finish(parseInt((rb.toString("utf8").split("\r\n")[0] || "").split(" ")[1] || "0", 10) || 0); }
+            catch (e) { finish(0); }
+          });
+        };
+        s.on("data", onData);
+      });
+    } catch (e) { resolve(0); }
+  });
+}
 function announce() {
   // publish our .onion to the guard so the mesh can re-home through us.
   // strict shape server-side, hourly rate limit. never blocks anything.
@@ -43,10 +94,14 @@ function announce() {
     if (!base) {
       try { base = String(JSON.parse(fs.readFileSync(path.join(os.homedir(), ".wrath-relay", "guard.json"), "utf8")).guard || "").trim(); } catch (e) {}
     }
-    if (!base) base = "http://63.250.44.213:8080"; // bootstrap guard, overridable
-    if (!base) return;
+    if (!base) base = "http://doef5xgdqcrdxxmvpodjtbt3h7xqkojygwyh2wsovk7rhzdqvdnsxcyd.onion"; // panel frontal, via sidecar Tor
     const body = Buffer.from(JSON.stringify({ onion }));
-    const u = new URL(base.replace(/\/$/, "") + "/api/mesh/announce");
+    const target = base.replace(/\/$/, "") + "/api/mesh/announce";
+    if (/\.onion/i.test(target)) {
+      socksPost(target, body).then(() => {});
+      return;
+    }
+    const u = new URL(target);
     const lib = u.protocol === "https:" ? require("https") : http;
     const req = lib.request({ hostname: u.hostname, port: u.port || (u.protocol === "https:" ? 443 : 80),
       path: u.pathname, method: "POST",
