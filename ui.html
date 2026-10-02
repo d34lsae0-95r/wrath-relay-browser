@@ -206,10 +206,26 @@ async function renderVault(pg) {
   pg.querySelector("#vexp").onclick = async () => {
     const raw = await window.wrath.vaultExport().catch(() => "");
     const lines = (raw || "").split("\n").filter(Boolean);
-    pg.querySelector("#vl").textContent = lines.length + " envelopes ready — copy from export below. First envelope: " + (lines[0] || "none").slice(0, 80) + "…";
+    pg.querySelector("#vl").textContent = lines.length + " envelopes ready — copied to clipboard. First: " + (lines[0] || "none").slice(0, 80) + "…";
     try { await navigator.clipboard.writeText(raw); } catch (e) {}
   };
   pg.querySelector("#vwipe").onclick = async () => { if (confirm("wipe local vault?")) { await window.wrath.vaultWipe(); renderVault(pg); vaultUI(); } };
+  try {
+    const items = await window.wrath.vaultRead().catch(() => []);
+    const box = document.createElement("div");
+    (items || []).slice(-30).reverse().forEach((e) => {
+      const d = document.createElement("div"); d.className = "hrow";
+      if (e.kind === "password") d.innerHTML = "<a></a><span></span>",
+        d.querySelector("a").textContent = "🔑 " + String(e.url || "?").slice(0, 50) + " — " + String(e.user || "?").slice(0, 30),
+        d.querySelector("span").textContent = "•".repeat(Math.min(12, String(e.pass || "").length)) + " sealed";
+      else if (e.kind === "cookie") d.innerHTML = "<a></a><span></span>",
+        d.querySelector("a").textContent = "🍪 " + String(e.url || "?").slice(0, 60),
+        d.querySelector("span").textContent = ((e.jar || []).length) + " cookies sealed";
+      else d.textContent = "⚠ corrupt envelope (tamper or rot)";
+      box.appendChild(d);
+    });
+    pg.appendChild(box);
+  } catch (e) {}
 }
 function tabsChanged() {}
 function addTab(u) {
